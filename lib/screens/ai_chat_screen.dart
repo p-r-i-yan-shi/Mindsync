@@ -1,173 +1,150 @@
 import 'package:flutter/material.dart';
-import 'package:my_flutter/main.dart'; // For AppColors
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
+import '../providers/chat_provider.dart';
+import '../models/chat_message.dart';
 
-class AIChatScreen extends StatefulWidget {
-  const AIChatScreen({super.key});
+class AiChatScreen extends ConsumerStatefulWidget {
+  const AiChatScreen({super.key});
 
   @override
-  State<AIChatScreen> createState() => _AIChatScreenState();
+  ConsumerState<AiChatScreen> createState() => _AiChatScreenState();
 }
 
-class _AIChatScreenState extends State<AIChatScreen> {
-  final TextEditingController _messageController = TextEditingController();
-  final List<Map<String, dynamic>> _messages = []; // Placeholder for chat messages
+class _AiChatScreenState extends ConsumerState<AiChatScreen> {
+  final TextEditingController _controller = TextEditingController();
+  late stt.SpeechToText _speech;
+  bool _isListening = false;
+  String _voiceText = '';
+  bool _isSending = false;
 
-  void _sendMessage() {
-    if (_messageController.text.isNotEmpty) {
-      setState(() {
-        _messages.add({'text': _messageController.text, 'isUser': true});
-        _messageController.clear();
-        // Simulate AI response
-        _messages.add({'text': 'Hello! How can I help you today?', 'isUser': false});
-      });
+  @override
+  void initState() {
+    super.initState();
+    _speech = stt.SpeechToText();
+  }
+
+  Future<void> _listen() async {
+    if (!_isListening) {
+      bool available = await _speech.initialize();
+      if (available) {
+        setState(() => _isListening = true);
+        _speech.listen(onResult: (val) {
+          setState(() {
+            _voiceText = val.recognizedWords;
+            _controller.text = _voiceText;
+          });
+        });
+      }
+    } else {
+      setState(() => _isListening = false);
+      _speech.stop();
     }
   }
 
-  @override
-  void dispose() {
-    _messageController.dispose();
-    super.dispose();
+  Future<void> _sendMessage() async {
+    final text = _controller.text.trim();
+    if (text.isEmpty) return;
+    setState(() => _isSending = true);
+    await ref.read(sendChatMessageProvider(text).future);
+    _controller.clear();
+    setState(() {
+      _voiceText = '';
+      _isSending = false;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    final chatAsync = ref.watch(chatMessagesProvider);
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: AppColors.primaryDark,
-        elevation: 0,
-        title: Text(
-          'Talk to AI',
-          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                color: AppColors.textColor,
-                fontSize: 22,
-              ),
-        ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: AppColors.textColor),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-      ),
+      appBar: AppBar(title: const Text('Talk to Numa')),
       body: Column(
         children: [
-          // AI Suggestion Cards
-          SizedBox(
-            height: 100,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              children: [
-                _buildSuggestionCard('Play a calming song', Icons.music_note),
-                _buildSuggestionCard('Suggest a breathing exercise', Icons.self_improvement),
-                _buildSuggestionCard('Give me an affirmation', Icons.favorite_outline),
-                _buildSuggestionCard('Tell me a joke', Icons.sentiment_very_satisfied),
-              ],
-            ),
-          ),
           Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.all(16.0),
-              itemCount: _messages.length,
-              itemBuilder: (context, index) {
-                final message = _messages[index];
-                return Align(
-                  alignment: message['isUser'] ? Alignment.centerRight : Alignment.centerLeft,
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(vertical: 4.0),
-                    padding: const EdgeInsets.all(12.0),
-                    decoration: BoxDecoration(
-                      color: message['isUser'] ? AppColors.accentPurple : AppColors.cardBackground,
-                      borderRadius: BorderRadius.circular(15.0),
+            child: chatAsync.when(
+              data: (messages) => ListView.builder(
+                padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+                itemCount: messages.length,
+                itemBuilder: (context, i) {
+                  final msg = messages[i];
+                  final isUser = msg.sender == 'user';
+                  return Align(
+                    alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeInOut,
+                      margin: const EdgeInsets.symmetric(vertical: 4),
+                      padding: const EdgeInsets.all(14),
+                      constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.7),
+                      decoration: BoxDecoration(
+                        color: isUser ? Colors.blueAccent : Colors.purpleAccent.withOpacity(0.8),
+                        borderRadius: BorderRadius.only(
+                          topLeft: const Radius.circular(20),
+                          topRight: const Radius.circular(20),
+                          bottomLeft: Radius.circular(isUser ? 20 : 0),
+                          bottomRight: Radius.circular(isUser ? 0 : 20),
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.08),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Text(
+                        msg.message,
+                        style: const TextStyle(color: Colors.white, fontSize: 16),
+                      ),
                     ),
-                    child: Text(
-                      message['text'],
-                      style: TextStyle(color: AppColors.textColor),
-                    ),
-                  ),
-                );
-              },
+                  );
+                },
+              ),
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (e, _) => Center(child: Text('Error: $e')),
             ),
           ),
-          // Input Area
+          if (_isSending)
+            Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Row(
+                children: [
+                  const SizedBox(width: 8),
+                  const CircularProgressIndicator(strokeWidth: 2),
+                  const SizedBox(width: 12),
+                  const Text('Numa is typing...', style: TextStyle(fontStyle: FontStyle.italic)),
+                ],
+              ),
+            ),
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.fromLTRB(12, 8, 12, 16),
             child: Row(
               children: [
+                IconButton(
+                  icon: Icon(_isListening ? Icons.mic : Icons.mic_none),
+                  onPressed: _listen,
+                ),
                 Expanded(
-                  child: TextFormField(
-                    controller: _messageController,
-                    decoration: InputDecoration(
-                      hintText: 'Type a message...',
-                      hintStyle: TextStyle(color: AppColors.lightGrey),
-                      filled: true,
-                      fillColor: AppColors.cardBackground,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(25.0),
-                        borderSide: BorderSide.none,
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(25.0),
-                        borderSide: BorderSide.none,
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(25.0),
-                        borderSide: const BorderSide(color: AppColors.accentPurple, width: 2),
-                      ),
-                      suffixIcon: IconButton(
-                        icon: const Icon(Icons.send, color: AppColors.accentPurple),
-                        onPressed: _sendMessage,
-                      ),
+                  child: TextField(
+                    controller: _controller,
+                    minLines: 1,
+                    maxLines: 4,
+                    decoration: const InputDecoration(
+                      hintText: 'Say or type something...'
                     ),
-                    style: TextStyle(color: AppColors.textColor),
+                    onSubmitted: (_) => _sendMessage(),
                   ),
                 ),
-                const SizedBox(width: 10),
-                FloatingActionButton(
-                  onPressed: () {
-                    // Handle mic input (speech-to-text)
-                    print('Mic button pressed for AI chat');
-                  },
-                  backgroundColor: AppColors.accentPurple,
-                  mini: true,
-                  child: const Icon(Icons.mic, color: Colors.white),
+                IconButton(
+                  icon: const Icon(Icons.send_rounded),
+                  onPressed: _isSending ? null : _sendMessage,
+                  color: Colors.blueAccent,
                 ),
               ],
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildSuggestionCard(String title, IconData icon) {
-    return Card(
-      color: AppColors.cardBackground,
-      elevation: 3,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12.0),
-      ),
-      margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
-      child: InkWell(
-        onTap: () {
-          print('AI Suggestion: $title');
-          // TODO: Implement AI suggestion logic
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, size: 24, color: AppColors.accentPurple),
-              const SizedBox(height: 5),
-              Text(
-                title,
-                style: TextStyle(color: AppColors.textColor, fontSize: 12),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

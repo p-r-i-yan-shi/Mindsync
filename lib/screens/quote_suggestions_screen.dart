@@ -1,143 +1,106 @@
 import 'package:flutter/material.dart';
-import 'package:my_flutter/main.dart'; // For AppColors
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers/suggestions_provider.dart';
 
-class QuoteSuggestionsScreen extends StatefulWidget {
+class QuoteSuggestionsScreen extends ConsumerWidget {
   const QuoteSuggestionsScreen({super.key});
 
   @override
-  State<QuoteSuggestionsScreen> createState() => _QuoteSuggestionsScreenState();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final quoteAsync = ref.watch(dailyQuoteProvider);
+    final musicSuggestions = ref.watch(musicSuggestionsProvider);
+    final selfCareSuggestions = ref.watch(selfCareSuggestionsProvider);
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('Suggestions')),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 600),
+            child: quoteAsync.when(
+              data: (quote) => SuggestionCard(
+                key: const ValueKey('quote'),
+                title: 'Daily Quote',
+                content: quote,
+                icon: Icons.format_quote,
+                color: Colors.purpleAccent,
+              ),
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (e, _) => SuggestionCard(
+                key: const ValueKey('quote-error'),
+                title: 'Daily Quote',
+                content: 'Could not load quote.',
+                icon: Icons.error_outline,
+                color: Colors.redAccent,
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+          SuggestionCard(
+            title: 'Music Suggestion',
+            content: musicSuggestions.first,
+            icon: Icons.music_note,
+            color: Colors.blueAccent,
+          ),
+          const SizedBox(height: 24),
+          ...selfCareSuggestions.take(2).map((s) => Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: SuggestionCard(
+                  title: 'Self-Care',
+                  content: s,
+                  icon: Icons.spa,
+                  color: Colors.greenAccent,
+                ),
+              )),
+        ],
+      ),
+    );
+  }
 }
 
-class _QuoteSuggestionsScreenState extends State<QuoteSuggestionsScreen> {
-  final List<String> _quotes = [
-    "The only way to do great work is to love what you do. - Steve Jobs",
-    "Believe you can and you're halfway there. - Theodore Roosevelt",
-    "The future belongs to those who believe in the beauty of their dreams. - Eleanor Roosevelt",
-    "It is during our darkest moments that we must focus to see the light. - Aristotle Onassis",
-    "Strive not to be a success, but rather to be of value. - Albert Einstein",
-  ];
-  int _currentQuoteIndex = 0;
+class SuggestionCard extends StatelessWidget {
+  final String title;
+  final String content;
+  final IconData icon;
+  final Color color;
 
-  void _nextQuote() {
-    setState(() {
-      _currentQuoteIndex = (_currentQuoteIndex + 1) % _quotes.length;
-    });
-  }
+  const SuggestionCard({
+    super.key,
+    required this.title,
+    required this.content,
+    required this.icon,
+    required this.color,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: AppColors.primaryDark,
-        elevation: 0,
-        title: Text(
-          'Quotes & Suggestions',
-          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                color: AppColors.textColor,
-                fontSize: 22,
-              ),
-        ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: AppColors.textColor),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
+    return Card(
+      elevation: 6,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-              child: Center(
-                child: Card(
-                  color: AppColors.cardBackground,
-                  elevation: 5,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15.0),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          _quotes[_currentQuoteIndex],
-                          textAlign: TextAlign.center,
-                          style: TextStyle(color: AppColors.textColor, fontSize: 18, fontStyle: FontStyle.italic),
-                        ),
-                        const SizedBox(height: 20),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.favorite_border, color: AppColors.accentPurple),
-                              onPressed: () {
-                                // TODO: Implement save/favorite quote
-                                print('Favorite quote: ${_quotes[_currentQuoteIndex]}');
-                              },
-                            ),
-                            const SizedBox(width: 20),
-                            ElevatedButton(
-                              onPressed: _nextQuote,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.accentPurple, // Button background color
-                                foregroundColor: Colors.white, // Button text color
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 12),
-                              ),
-                              child: const Text('Next Quote', style: TextStyle(fontSize: 16)),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
+            CircleAvatar(
+              backgroundColor: color.withOpacity(0.15),
+              child: Icon(icon, color: color, size: 28),
+              radius: 28,
             ),
-            const SizedBox(height: 20),
-            Text(
-              'Daily Suggestions:',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    color: AppColors.textColor,
-                    fontSize: 20,
-                  ),
-            ),
-            const SizedBox(height: 10),
-            // Placeholder for suggestions list
+            const SizedBox(width: 20),
             Expanded(
-              child: ListView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildSuggestionItem('Try a 5-minute meditation', Icons.self_improvement),
-                  _buildSuggestionItem('Write down 3 things you are grateful for', Icons.edit_note),
-                  _buildSuggestionItem('Take a short walk outside', Icons.directions_walk),
+                  Text(title, style: Theme.of(context).textTheme.titleLarge),
+                  const SizedBox(height: 8),
+                  Text(content, style: Theme.of(context).textTheme.bodyLarge),
                 ],
               ),
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildSuggestionItem(String suggestion, IconData icon) {
-    return Card(
-      color: AppColors.cardBackground,
-      margin: const EdgeInsets.symmetric(vertical: 8.0),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12.0),
-      ),
-      child: ListTile(
-        leading: Icon(icon, color: AppColors.accentPurple),
-        title: Text(suggestion, style: TextStyle(color: AppColors.textColor)),
-        trailing: const Icon(Icons.arrow_forward_ios, color: AppColors.lightGrey),
-        onTap: () {
-          print('Suggestion tapped: $suggestion');
-          // TODO: Implement suggestion action
-        },
       ),
     );
   }

@@ -1,6 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:my_flutter/main.dart'; // For AppColors
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+final themeProviderNotifier = StateNotifierProvider<ThemeProviderNotifier, ThemeProvider>((ref) => ThemeProviderNotifier());
+
+class ThemeProviderNotifier extends StateNotifier<ThemeProvider> {
+  ThemeProviderNotifier() : super(ThemeProvider());
+  void toggleTheme() => state.toggleTheme();
+  void setAccentColor(Color color) => state.setAccentColor(color);
+  // Add other theme-related methods as needed
+}
 
 class ThemeProvider with ChangeNotifier {
   bool _isDarkMode = true; // Default to dark mode

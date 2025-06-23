@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:my_flutter/main.dart'; // For AppColors
 import 'package:my_flutter/screens/home_dashboard_screen.dart'; // Import HomeDashboardScreen
+import 'package:my_flutter/screens/auth/signup_screen.dart'; // Import SignUpScreen
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -9,48 +10,16 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStateMixin {
+class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _isPasswordVisible = false;
   bool _isLoading = false;
-  late AnimationController _animationController;
-  late Animation<double> _fadeAnimation;
-  late Animation<Offset> _slideAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 800),
-    );
-    
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: Curves.easeInOut,
-      ),
-    );
-    
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.1),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: Curves.easeOutQuart,
-      ),
-    );
-    
-    _animationController.forward();
-  }
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
-    _animationController.dispose();
     super.dispose();
   }
 
@@ -80,29 +49,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       print('Temporary Login Successful!');
       Navigator.pushReplacement(
         context,
-        PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) => const HomeDashboardScreen(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            const begin = Offset(1.0, 0.0);
-            const end = Offset.zero;
-            const curve = Curves.easeInOutCubic;
-            
-            var tween = Tween(begin: begin, end: end).chain(
-              CurveTween(curve: curve),
-            );
-            
-            var offsetAnimation = animation.drive(tween);
-            
-            return SlideTransition(
-              position: offsetAnimation,
-              child: FadeTransition(
-                opacity: animation,
-                child: child,
-              ),
-            );
-          },
-          transitionDuration: const Duration(milliseconds: 500),
-        ),
+        MaterialPageRoute(builder: (context) => const HomeDashboardScreen()),
       );
     } else {
       print('Login Failed: Invalid credentials');
@@ -122,99 +69,80 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              AppColors.primaryDark,
-              AppColors.primaryDark.withOpacity(0.8),
-              AppColors.darkGrey,
-            ],
-          ),
-        ),
-        child: SafeArea(
+      backgroundColor: AppColors.primaryDark,
+      body: SafeArea(
+        child: Center(
           child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: FadeTransition(
-                opacity: _fadeAnimation,
-                child: SlideTransition(
-                  position: _slideAnimation,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: IconButton(
-                          icon: const Icon(Icons.arrow_back_ios, color: AppColors.textColor),
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
-                        ),
+            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 500),
+                  curve: Curves.easeInOut,
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [AppColors.accentPurple, AppColors.accentBlue],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(32),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.accentPurple.withOpacity(0.13),
+                        blurRadius: 18,
+                        offset: const Offset(0, 8),
                       ),
-                      const SizedBox(height: 20),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                       Text(
-                        'Welcome Back',
+                        'Log in',
                         style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                              color: AppColors.textColor,
+                              color: Colors.white,
                               fontSize: 32,
                               fontWeight: FontWeight.bold,
                             ),
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Sign in to continue',
-                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                              color: AppColors.lightGrey,
-                              fontSize: 16,
-                            ),
-                      ),
-                      const SizedBox(height: 40),
+                      const SizedBox(height: 30),
                       _buildTextField(
                         controller: _emailController,
-                        labelText: 'Email address',
-                        prefixIcon: Icons.email,
+                        hintText: 'Email address',
                         keyboardType: TextInputType.emailAddress,
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 15),
                       _buildTextField(
                         controller: _passwordController,
-                        labelText: 'Password',
-                        prefixIcon: Icons.lock,
-                        suffixIcon: _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                        onSuffixIconPressed: () {
-                          setState(() {
-                            _isPasswordVisible = !_isPasswordVisible;
-                          });
-                        },
+                        hintText: 'Password',
                         obscureText: !_isPasswordVisible,
-                      ),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: TextButton(
-                          onPressed: () {
-                            // Handle forgot password
-                          },
-                          child: const Text(
-                            'Forgot Password?',
-                            style: TextStyle(color: AppColors.accentPurple),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                            color: AppColors.lightGrey,
                           ),
+                          onPressed: () {
+                            setState(() {
+                              _isPasswordVisible = !_isPasswordVisible;
+                            });
+                          },
                         ),
                       ),
-                      const SizedBox(height: 40),
+                      const SizedBox(height: 30),
                       _buildLoginButton(),
+                      const SizedBox(height: 20),
+                      _buildSignUpPrompt(),
                       const SizedBox(height: 30),
                       _buildDivider(),
                       const SizedBox(height: 30),
                       _buildGoogleLoginButton(),
-                      const SizedBox(height: 20),
-                      _buildSignUpPrompt(),
                     ],
                   ),
                 ),
-              ),
+              ],
             ),
           ),
         ),
@@ -224,24 +152,15 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
 
   Widget _buildTextField({
     required TextEditingController controller,
-    required String labelText,
-    required IconData prefixIcon,
-    IconData? suffixIcon,
-    VoidCallback? onSuffixIconPressed,
+    required String hintText,
     bool obscureText = false,
     TextInputType? keyboardType,
+    Widget? suffixIcon,
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.cardBackground.withOpacity(0.5),
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
-          ),
-        ],
+        color: AppColors.cardBackground, // Solid background for text fields
+        borderRadius: BorderRadius.circular(12), // Rounded corners
       ),
       child: TextFormField(
         controller: controller,
@@ -249,22 +168,24 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
         keyboardType: keyboardType,
         style: const TextStyle(color: AppColors.textColor),
         decoration: InputDecoration(
-          labelText: labelText,
-          labelStyle: const TextStyle(color: AppColors.lightGrey),
-          prefixIcon: Icon(prefixIcon, color: AppColors.accentPurple),
-          suffixIcon: suffixIcon != null
-              ? IconButton(
-                  icon: Icon(suffixIcon, color: AppColors.lightGrey),
-                  onPressed: onSuffixIconPressed,
-                )
-              : null,
+          hintText: hintText,
+          hintStyle: TextStyle(color: AppColors.lightGrey.withOpacity(0.7)),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none, // No border
+          ),
+          enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide.none,
           ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none,
+          ),
+          suffixIcon: suffixIcon,
           filled: true,
-          fillColor: Colors.transparent,
-          contentPadding: const EdgeInsets.symmetric(vertical: 16),
+          fillColor: Colors.transparent, // Use container's fill color
         ),
       ),
     );
@@ -272,7 +193,8 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
 
   Widget _buildLoginButton() {
     return SizedBox(
-      height: 56,
+      width: double.infinity, // Full width
+      height: 56, // Standard button height
       child: ElevatedButton(
         onPressed: _isLoading ? null : _handleLogin,
         style: ElevatedButton.styleFrom(
@@ -280,7 +202,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
           foregroundColor: Colors.white,
           elevation: 5,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(12), // Match text field radius
           ),
           padding: const EdgeInsets.symmetric(vertical: 16),
         ),
@@ -293,10 +215,10 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                   strokeWidth: 2,
                 ),
               )
-            : const Text(
-                'Login',
-                style: TextStyle(
-                  fontSize: 18,
+            : Text(
+                'Log in',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  color: Colors.white,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -307,26 +229,26 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   Widget _buildDivider() {
     return Row(
       children: [
-        Expanded(
+        const Expanded(
           child: Divider(
-            color: AppColors.lightGrey.withOpacity(0.3),
-            thickness: 1,
+            color: AppColors.lightGrey,
+            thickness: 0.5,
           ),
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
             'OR',
-            style: TextStyle(
-              color: AppColors.lightGrey.withOpacity(0.7),
-              fontWeight: FontWeight.bold,
-            ),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: AppColors.lightGrey,
+                  fontWeight: FontWeight.bold,
+                ),
           ),
         ),
-        Expanded(
+        const Expanded(
           child: Divider(
-            color: AppColors.lightGrey.withOpacity(0.3),
-            thickness: 1,
+            color: AppColors.lightGrey,
+            thickness: 0.5,
           ),
         ),
       ],
@@ -334,24 +256,55 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   }
 
   Widget _buildGoogleLoginButton() {
-    return OutlinedButton.icon(
-      onPressed: () {
-        // Handle Google Login
-      },
-      icon: const Icon(Icons.g_mobiledata, size: 30, color: AppColors.accentPurple),
-      label: const Text(
-        'Continue with Google',
-        style: TextStyle(
-          color: AppColors.textColor,
-          fontSize: 16,
-        ),
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 350),
+      curve: Curves.easeInOut,
+      width: double.infinity,
+      height: 56,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.accentPurple.withOpacity(0.10),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
-      style: OutlinedButton.styleFrom(
-        side: const BorderSide(color: AppColors.accentPurple),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+      child: ElevatedButton(
+        onPressed: () {
+          print('Continue with Google pressed');
+          // TODO: Implement Google Sign-In logic
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.transparent,
+          shadowColor: Colors.transparent,
+          foregroundColor: Colors.black,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          elevation: 0,
+          padding: const EdgeInsets.symmetric(vertical: 16),
         ),
-        padding: const EdgeInsets.symmetric(vertical: 16),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Image.asset(
+              'assets/images/google_logo.png',
+              height: 24,
+              width: 24,
+            ),
+            const SizedBox(width: 10),
+            Text(
+              'Continue with Google',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -362,20 +315,23 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       children: [
         Text(
           'Don\'t have an account? ',
-          style: TextStyle(
-            color: AppColors.lightGrey.withOpacity(0.7),
-          ),
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: AppColors.lightGrey,
+              ),
         ),
-        TextButton(
-          onPressed: () {
-            // Navigate to sign up screen
+        GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const SignUpScreen()),
+            );
           },
-          child: const Text(
-            'Sign Up',
-            style: TextStyle(
-              color: AppColors.accentPurple,
-              fontWeight: FontWeight.bold,
-            ),
+          child: Text(
+            'Sign up',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: AppColors.accentPurple,
+                  fontWeight: FontWeight.bold,
+                ),
           ),
         ),
       ],

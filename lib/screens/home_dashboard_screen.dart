@@ -71,7 +71,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> with SingleTi
         // 'Practice' - Navigates to AI Chat
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const AIChatScreen()),
+          MaterialPageRoute(builder: (context) => const AiChatScreen()),
         );
         break;
       case 2:
@@ -180,26 +180,56 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> with SingleTi
   }
 
   Widget _buildGreeting() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Hello, User!',
-          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                color: AppColors.textColor,
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-              ),
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 700),
+      curve: Curves.easeOutCubic,
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        gradient: LinearGradient(
+          colors: [AppColors.accentPurple.withOpacity(0.7), AppColors.accentBlue.withOpacity(0.7)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
-        const SizedBox(height: 8),
-        Text(
-          'How are you feeling today?',
-          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: AppColors.lightGrey,
-                fontSize: 16,
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.accentPurple.withOpacity(0.15),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 28,
+            backgroundColor: AppColors.accentBlue.withOpacity(0.2),
+            child: Icon(Icons.emoji_emotions, color: AppColors.accentPurple, size: 32),
+          ),
+          const SizedBox(width: 16),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Hello, User!',
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      color: AppColors.textColor,
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                    ),
               ),
-        ),
-      ],
+              const SizedBox(height: 6),
+              Text(
+                'How are you feeling today?',
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: AppColors.lightGrey,
+                      fontSize: 16,
+                    ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
@@ -292,6 +322,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> with SingleTi
                 MaterialPageRoute(builder: (context) => const JournalEntryScreen()),
               );
             },
+            gradient: LinearGradient(colors: [AppColors.accentPurple, AppColors.accentBlue]),
           ),
           _buildDashboardCard(
             context,
@@ -301,9 +332,10 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> with SingleTi
             () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const AIChatScreen()),
+                MaterialPageRoute(builder: (context) => const AiChatScreen()),
               );
             },
+            gradient: LinearGradient(colors: [AppColors.accentBlue, AppColors.accentGreen]),
           ),
           _buildDashboardCard(
             context,
@@ -316,6 +348,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> with SingleTi
                 MaterialPageRoute(builder: (context) => const MoodTrackerScreen()),
               );
             },
+            gradient: LinearGradient(colors: [AppColors.accentGreen, AppColors.accentPurple]),
           ),
           _buildDashboardCard(
             context,
@@ -328,59 +361,51 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> with SingleTi
                 MaterialPageRoute(builder: (context) => const QuoteSuggestionsScreen()),
               );
             },
+            gradient: LinearGradient(colors: [AppColors.accentRed, AppColors.accentPurple]),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildDashboardCard(
-    BuildContext context,
-    String title,
-    IconData icon,
-    String subtitle,
-    VoidCallback onTap,
-  ) {
-    return Card(
-      color: AppColors.cardBackground,
-      elevation: 5,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16.0),
-      ),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16.0),
+  Widget _buildDashboardCard(BuildContext context, String title, IconData icon, String subtitle, VoidCallback onTap, {required Gradient gradient}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeInOut,
+        decoration: BoxDecoration(
+          gradient: gradient,
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: gradient.colors.first.withOpacity(0.18),
+              blurRadius: 16,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(18.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: AppColors.accentPurple.withOpacity(0.2),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(icon, size: 32, color: AppColors.accentPurple),
-              ),
-              const SizedBox(height: 16),
+              Icon(icon, color: Colors.white, size: 36),
+              const SizedBox(height: 18),
               Text(
                 title,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: AppColors.textColor,
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      color: Colors.white,
                       fontWeight: FontWeight.bold,
                     ),
-                textAlign: TextAlign.center,
               ),
               const SizedBox(height: 8),
               Text(
                 subtitle,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: AppColors.lightGrey,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Colors.white.withOpacity(0.85),
                     ),
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),
