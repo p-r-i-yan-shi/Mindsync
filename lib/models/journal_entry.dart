@@ -1,31 +1,87 @@
+import 'package:flutter/material.dart';
+
+// Mood enumeration
+enum Mood { happy, neutral, sad, angry, excited, calm }
+
+// Extension to get icon and color for Mood
+extension MoodDetails on Mood {
+  IconData get icon {
+    switch (this) {
+      case Mood.happy:
+        return Icons.sentiment_satisfied_alt;
+      case Mood.neutral:
+        return Icons.sentiment_neutral;
+      case Mood.sad:
+        return Icons.sentiment_dissatisfied;
+      case Mood.angry:
+        return Icons.sentiment_very_dissatisfied;
+      case Mood.excited:
+        return Icons.local_fire_department;
+      case Mood.calm:
+        return Icons.self_improvement;
+    }
+  }
+
+  Color getColor(BuildContext context) {
+    switch (this) {
+      case Mood.happy:
+        return Colors.green.shade400;
+      case Mood.neutral:
+        return Colors.grey.shade400;
+      case Mood.sad:
+        return Colors.blue.shade400;
+      case Mood.angry:
+        return Colors.red.shade400;
+      case Mood.excited:
+        return Colors.orange.shade400;
+      case Mood.calm:
+        return Colors.purple.shade400;
+    }
+  }
+
+  String get displayName {
+    return name[0].toUpperCase() + name.substring(1);
+  }
+}
+
 class JournalEntry {
   final String id;
-  final String userId;
-  final String content;
-  final DateTime createdAt;
-  final String? voiceText;
+  String title;
+  String content;
+  Mood mood;
+  DateTime timestamp;
+  bool isFavorite;
 
   JournalEntry({
     required this.id,
-    required this.userId,
+    required this.title,
     required this.content,
-    required this.createdAt,
-    this.voiceText,
+    required this.mood,
+    required this.timestamp,
+    this.isFavorite = false,
   });
 
-  Map<String, dynamic> toMap() => {
-        'id': id,
-        'userId': userId,
-        'content': content,
-        'createdAt': createdAt.toIso8601String(),
-        'voiceText': voiceText,
-      };
+  factory JournalEntry.fromMap(Map<String, dynamic> map) {
+    return JournalEntry(
+      id: map['id'] as String,
+      title: map['title'] as String,
+      content: map['content'] as String,
+      mood: Mood.values.firstWhere(
+        (Mood e) => e.toString() == 'Mood.${map['mood']}',
+      ),
+      timestamp: DateTime.parse(map['timestamp'] as String),
+      isFavorite: map['isFavorite'] as bool? ?? false,
+    );
+  }
 
-  factory JournalEntry.fromMap(Map<String, dynamic> map) => JournalEntry(
-        id: map['id'] as String,
-        userId: map['userId'] as String,
-        content: map['content'] as String,
-        createdAt: DateTime.parse(map['createdAt'] as String),
-        voiceText: map['voiceText'] as String?,
-      );
+  Map<String, dynamic> toMap() {
+    return <String, dynamic>{
+      'id': id,
+      'title': title,
+      'content': content,
+      'mood': mood.toString().split('.').last,
+      'timestamp': timestamp.toIso8601String(),
+      'isFavorite': isFavorite,
+    };
+  }
 } 

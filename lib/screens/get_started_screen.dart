@@ -6,61 +6,47 @@ class GetStartedScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: SafeArea(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 32.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Hero(
-                  tag: 'logo',
-                  child: Image.asset(
-                    'assets/images/google_logo.png',
-                    height: 96,
-                  ),
-                ),
-                const SizedBox(height: 32),
-                Hero(
-                  tag: 'title',
-                  child: Text(
-                    'MindSync',
-                    style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 1.2,
-                        ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'Your AI-powered mental wellness companion. Journal, chat, track moods, and grow.',
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: Theme.of(context).colorScheme.secondary,
-                        fontSize: 18,
-                      ),
-                ),
-                const SizedBox(height: 48),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.of(context).pushReplacementNamed('/login');
-                  },
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(32),
-                    ),
-                    elevation: 8,
-                  ),
-                  child: const Text(
-                    'Get Started',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ],
+      appBar: AppBar(
+        title: const Text('Welcome to MindSync'),
+        centerTitle: true,
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        foregroundColor: Theme.of(context).colorScheme.onSurface,
+        elevation: 0,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            Text(
+              'Welcome to MindSync Journal!',
+              style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
             ),
-          ),
+            const SizedBox(height: 24),
+            Text(
+              'Your personal journal and AI companion for reflection and wellbeing.',
+              style: Theme.of(context).textTheme.bodyLarge,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 48),
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.of(context).pushReplacementNamed('/login');
+              },
+              icon: const Icon(Icons.login),
+              label: const Text('Login'),
+            ),
+            const SizedBox(height: 16),
+            OutlinedButton.icon(
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Sign up functionality not implemented.')));
+              },
+              icon: const Icon(Icons.person_add_alt_1),
+              label: const Text('Get Started (Sign Up)'),
+            ),
+          ],
         ),
       ),
     );
