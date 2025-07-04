@@ -23,48 +23,27 @@ class MoodPicker extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 8),
         Wrap(
-          spacing: 12.0,
-          runSpacing: 12.0,
-          children: Mood.values.map<Widget>((Mood mood) {
+          spacing: 12,
+          children: Mood.values.map((Mood mood) {
             final bool isSelected = selectedMood == mood;
             return ChoiceChip(
-              label: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  Icon(
-                    mood.icon,
-                    color: isSelected
-                        ? Theme.of(context).colorScheme.onPrimary
-                        : mood.getColor(context),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    mood.displayName,
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: isSelected
-                              ? Theme.of(context).colorScheme.onPrimary
-                              : Theme.of(context).colorScheme.onSurface,
-                        ),
-                  ),
-                ],
+              label: Text(mood.displayName),
+              avatar: Icon(
+                mood.icon,
+                color: isSelected
+                    ? Theme.of(context).colorScheme.onPrimary
+                    : mood.getColor(context),
               ),
               selected: isSelected,
-              selectedColor: Theme.of(context).colorScheme.primary,
-              onSelected: (bool selected) {
-                onMoodSelected(selected ? mood : null);
-              },
-              backgroundColor:
-                  Theme.of(context).colorScheme.surfaceContainerHighest,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-                side: BorderSide(
-                  color: isSelected
-                      ? Theme.of(context).colorScheme.primary
-                      : Theme.of(context).colorScheme.outline,
-                  width: 1.5,
-                ),
+              selectedColor: mood.getColor(context),
+              onSelected: (_) => onMoodSelected(mood),
+              labelStyle: TextStyle(
+                color: isSelected
+                    ? Theme.of(context).colorScheme.onPrimary
+                    : Theme.of(context).colorScheme.onSurface,
+                fontWeight: FontWeight.w600,
               ),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             );

@@ -51,6 +51,7 @@ class JournalEntry {
   Mood mood;
   DateTime timestamp;
   bool isFavorite;
+  bool isDeleted;
 
   JournalEntry({
     required this.id,
@@ -59,6 +60,7 @@ class JournalEntry {
     required this.mood,
     required this.timestamp,
     this.isFavorite = false,
+    this.isDeleted = false,
   });
 
   factory JournalEntry.fromMap(Map<String, dynamic> map) {
@@ -71,6 +73,7 @@ class JournalEntry {
       ),
       timestamp: DateTime.parse(map['timestamp'] as String),
       isFavorite: map['isFavorite'] as bool? ?? false,
+      isDeleted: map['isDeleted'] as bool? ?? false,
     );
   }
 
@@ -82,6 +85,26 @@ class JournalEntry {
       'mood': mood.toString().split('.').last,
       'timestamp': timestamp.toIso8601String(),
       'isFavorite': isFavorite,
+      'isDeleted': isDeleted,
     };
+  }
+
+  JournalEntry copyWith({
+    String? title,
+    String? content,
+    Mood? mood,
+    DateTime? timestamp,
+    bool? isFavorite,
+    bool? isDeleted,
+  }) {
+    return JournalEntry(
+      id: id,
+      title: title ?? this.title,
+      content: content ?? this.content,
+      mood: mood ?? this.mood,
+      timestamp: timestamp ?? this.timestamp,
+      isFavorite: isFavorite ?? this.isFavorite,
+      isDeleted: isDeleted ?? this.isDeleted,
+    );
   }
 } 

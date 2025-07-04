@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../models/journal_entry.dart';
 import '../widgets/mood_picker.dart';
+import 'package:provider/provider.dart';
+import '../providers/journal_data.dart';
 
 class JournalEntryScreen extends StatefulWidget {
   final JournalEntry? entry;
@@ -41,16 +43,65 @@ class _JournalEntryScreenState extends State<JournalEntryScreen> {
       }
       final String newTitle = _titleController.text;
       final String newContent = _contentController.text;
-      final entry = JournalEntry(
-        id: widget.entry?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
-        title: newTitle,
-        content: newContent,
-        mood: _selectedMood!,
-        timestamp: _selectedTimestamp,
-        isFavorite: widget.entry?.isFavorite ?? false,
-      );
-      Navigator.of(context).pop(entry);
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Entry saved.')));
+      if (widget.entry == null) {
+        final JournalEntry newEntry = JournalEntry(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          title: newTitle,
+          content: newContent,
+          mood: _selectedMood!,
+          timestamp: _selectedTimestamp,
+          isFavorite: false,
+          isDeleted: false,
+        );
+        Provider.of<JournalData>(context, listen: false).addEntry(newEntry);
+      } else {
+        final JournalEntry updatedEntry = widget.entry!.copyWith(
+          title: newTitle,
+          content: newContent,
+          mood: _selectedMood!,
+          timestamp: _selectedTimestamp,
+        );
+        Provider.of<JournalData>(context, listen: false).updateEntry(updatedEntry);
+      }
+      Navigator.of(context).pop();
+    }
+  }
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: _selectedTimestamp,
+      firstDate: DateTime(2000),
+      lastDate: DateTime.now().add(const Duration(days: 1)),
+    );
+    if (pickedDate != null && pickedDate.toLocal() != _selectedTimestamp.toLocal()) {
+      setState(() {
+        _selectedTimestamp = DateTime(
+          pickedDate.year,
+          pickedDate.month,
+          pickedDate.day,
+          _selectedTimestamp.hour,
+          _selectedTimestamp.minute,
+        );
+      });
+    }
+  }
+
+  Future<void> _selectTime(BuildContext context) async {
+    final TimeOfDay? pickedTime = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(_selectedTimestamp),
+    );
+    if (pickedTime != null && pickedTime != TimeOfDay.fromDateTime(_selectedTimestamp)) {
+      setState(() {
+        _selectedTimestamp = DateTime(
+          _selectedTimestamp.year,
+          _selectedTimestamp.month,
+          _selectedTimestamp.day,
+          pickedTime.hour,
+          pickedTime.minute,
+        );
+      });
     }
   }
 

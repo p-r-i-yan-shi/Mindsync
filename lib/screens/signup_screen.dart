@@ -1,109 +1,57 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:my_flutter/screens/signup_screen.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class SignUpScreen extends StatefulWidget {
+  const SignUpScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<SignUpScreen> createState() => _SignUpScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   bool _isPasswordVisible = false;
+  bool _isConfirmPasswordVisible = false;
   bool _isLoading = false;
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
-  void _login() {
-    if (_formKey.currentState?.validate() ?? false) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Logging in...')));
-      Navigator.of(context).pushReplacementNamed('/home');
-    }
-  }
-
-  Future<void> _signInWithGoogle() async {
+  Future<void> _signUp() async {
+    if (!_formKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
     try {
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-      if (googleUser == null) {
-        setState(() => _isLoading = false);
-        return;
-      }
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-      final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
+      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
       );
-      await FirebaseAuth.instance.signInWithCredential(credential);
       if (mounted) {
         Navigator.of(context).pushReplacementNamed('/home');
       }
+    } on FirebaseAuthException catch (e) {
+      String msg = 'Sign up failed';
+      if (e.code == 'email-already-in-use') {
+        msg = 'Email already in use';
+      } else if (e.code == 'invalid-email') {
+        msg = 'Invalid email address';
+      } else if (e.code == 'weak-password') {
+        msg = 'Password is too weak';
+      }
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Google sign-in failed: $e')),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Sign up failed: $e')));
     } finally {
       setState(() => _isLoading = false);
     }
-  }
-
-  Widget _googleButton() {
-    return OutlinedButton(
-      onPressed: _isLoading ? null : _signInWithGoogle,
-      style: OutlinedButton.styleFrom(
-        side: const BorderSide(color: Color(0xFFE0E0E0)),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
-        elevation: 0,
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          SvgPicture.asset(
-            'assets/images/google-icon-logo-svgrepo-com.svg',
-            height: 22,
-            width: 22,
-          ),
-          const SizedBox(width: 12),
-          Text(
-            'Continue with Google',
-            style: GoogleFonts.poppins(
-              fontWeight: FontWeight.w600,
-              fontSize: 16,
-              color: Colors.black87,
-              letterSpacing: 0.1,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _orDivider() {
-    return Row(
-      children: [
-        Expanded(child: Divider(color: Colors.grey[300], thickness: 1)),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12.0),
-          child: Text('or', style: GoogleFonts.poppins(color: Colors.black54, fontWeight: FontWeight.w500)),
-        ),
-        Expanded(child: Divider(color: Colors.grey[300], thickness: 1)),
-      ],
-    );
   }
 
   @override
@@ -119,7 +67,7 @@ class _LoginScreenState extends State<LoginScreen> {
             children: <Widget>[
               const SizedBox(height: 24),
               Text(
-                'Welcome Back',
+                'Create Account',
                 style: GoogleFonts.poppins(
                   fontSize: 32,
                   fontWeight: FontWeight.w700,
@@ -130,7 +78,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                'Continue your wellness journey',
+                'Sign up to get started',
                 style: GoogleFonts.poppins(
                   fontSize: 16,
                   color: Colors.black54,
@@ -139,10 +87,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 32),
-              _googleButton(),
-              const SizedBox(height: 18),
-              _orDivider(),
-              const SizedBox(height: 18),
               Form(
                 key: _formKey,
                 child: Column(
@@ -206,6 +150,40 @@ class _LoginScreenState extends State<LoginScreen> {
                       },
                       style: GoogleFonts.poppins(color: Colors.black87, fontWeight: FontWeight.w500),
                     ),
+                    const SizedBox(height: 14),
+                    TextFormField(
+                      controller: _confirmPasswordController,
+                      obscureText: !_isConfirmPasswordVisible,
+                      decoration: InputDecoration(
+                        hintText: 'Confirm password',
+                        hintStyle: GoogleFonts.poppins(color: Colors.black38, fontWeight: FontWeight.w400),
+                        filled: true,
+                        fillColor: const Color(0xFFF5F6FA),
+                        contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 18),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: BorderSide.none,
+                        ),
+                        suffixIcon: IconButton(
+                          icon: Icon(_isConfirmPasswordVisible ? Icons.visibility : Icons.visibility_off, color: Colors.grey),
+                          onPressed: () {
+                            setState(() {
+                              _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
+                            });
+                          },
+                        ),
+                      ),
+                      validator: (String? value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please confirm your password';
+                        }
+                        if (value != _passwordController.text) {
+                          return 'Passwords do not match';
+                        }
+                        return null;
+                      },
+                      style: GoogleFonts.poppins(color: Colors.black87, fontWeight: FontWeight.w500),
+                    ),
                   ],
                 ),
               ),
@@ -214,7 +192,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 width: double.infinity,
                 height: 54,
                 child: ElevatedButton(
-                  onPressed: _login,
+                  onPressed: _signUp,
                   style: ElevatedButton.styleFrom(
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
@@ -238,7 +216,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: Container(
                       alignment: Alignment.center,
                       child: Text(
-                        'Sign In',
+                        'Sign Up',
                         style: GoogleFonts.poppins(
                           color: Colors.white,
                           fontWeight: FontWeight.w600,
@@ -259,17 +237,15 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
                   Text(
-                    "Don't have an account? ",
+                    "Already have an account? ",
                     style: GoogleFonts.poppins(color: Colors.black54, fontSize: 15, fontWeight: FontWeight.w400),
                   ),
                   GestureDetector(
                     onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(builder: (context) => const SignUpScreen()),
-                      );
+                      Navigator.of(context).pop();
                     },
                     child: Text(
-                      'Sign up',
+                      'Sign in',
                       style: GoogleFonts.poppins(
                         color: const Color(0xFF7B61FF),
                         fontWeight: FontWeight.bold,
