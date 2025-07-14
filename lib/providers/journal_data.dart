@@ -2,109 +2,57 @@ import 'package:flutter/material.dart';
 import '../models/journal_entry.dart';
 
 class JournalData extends ChangeNotifier {
-  final List<JournalEntry> _allEntries;
+  final List<JournalEntry> _entries = [];
 
-  List<JournalEntry> get entries => List<JournalEntry>.unmodifiable(
-        _allEntries.where((JournalEntry e) => !e.isDeleted).toList()
-          ..sort((JournalEntry a, JournalEntry b) => b.timestamp.compareTo(a.timestamp)),
-      );
-
-  List<JournalEntry> get deletedEntries => List<JournalEntry>.unmodifiable(
-        _allEntries.where((JournalEntry e) => e.isDeleted).toList()
-          ..sort((JournalEntry a, JournalEntry b) => b.timestamp.compareTo(a.timestamp)),
-      );
-
-  JournalData()
-      : _allEntries = <JournalEntry>[
-          JournalEntry(
-            id: DateTime.now().millisecondsSinceEpoch.toString() + '1',
-            title: 'Morning Reflections',
-            content: 'Woke up feeling refreshed after a good night\'s sleep. The sun was shining brightly, and I felt a sense of peace.',
-            mood: Mood.happy,
-            timestamp: DateTime.now().subtract(const Duration(days: 2, hours: 3)),
-            isFavorite: true,
-          ),
-          JournalEntry(
-            id: DateTime.now().millisecondsSinceEpoch.toString() + '2',
-            title: 'Project Deadline Stress',
-            content: 'Feeling the pressure with the project deadline approaching. Lots to do, but I\'m trying to stay focused.',
-            mood: Mood.neutral,
-            timestamp: DateTime.now().subtract(const Duration(days: 1, hours: 10)),
-          ),
-          JournalEntry(
-            id: DateTime.now().millisecondsSinceEpoch.toString() + '3',
-            title: 'Great Workout',
-            content: 'Had an amazing workout session today! Feeling strong and energized.',
-            mood: Mood.excited,
-            timestamp: DateTime.now().subtract(const Duration(hours: 5)),
-            isFavorite: true,
-          ),
-          JournalEntry(
-            id: DateTime.now().millisecondsSinceEpoch.toString() + '4',
-            title: 'Quiet Evening',
-            content: 'A calm and quiet evening at home, reading a book. A good way to unwind.',
-            mood: Mood.calm,
-            timestamp: DateTime.now().subtract(const Duration(hours: 1)),
-          ),
-          JournalEntry(
-            id: DateTime.now().millisecondsSinceEpoch.toString() + '5',
-            title: 'Frustrating Bug',
-            content: 'Spent hours debugging a tricky issue. Feeling a bit angry, but learned a lot.',
-            mood: Mood.angry,
-            timestamp: DateTime.now().subtract(const Duration(days: 3)),
-          ),
-          JournalEntry(
-            id: DateTime.now().millisecondsSinceEpoch.toString() + '6',
-            title: 'Rainy Day Blues',
-            content: 'The weather is gloomy, and it\'s affecting my mood. Just feeling a bit down today.',
-            mood: Mood.sad,
-            timestamp: DateTime.now().subtract(const Duration(hours: 2)),
-          ),
-        ] {
-    _allEntries.sort((JournalEntry a, JournalEntry b) => b.timestamp.compareTo(a.timestamp));
-  }
+  List<JournalEntry> get entries => List<JournalEntry>.unmodifiable(_entries);
 
   void addEntry(JournalEntry entry) {
-    _allEntries.add(entry);
-    _allEntries.sort((JournalEntry a, JournalEntry b) => b.timestamp.compareTo(a.timestamp));
+    _entries.insert(0, entry);
     notifyListeners();
   }
 
-  void updateEntry(JournalEntry updatedEntry) {
-    final int index = _allEntries.indexWhere((JournalEntry entry) => entry.id == updatedEntry.id);
-    if (index != -1) {
-      _allEntries[index] = updatedEntry;
-      _allEntries.sort((JournalEntry a, JournalEntry b) => b.timestamp.compareTo(a.timestamp));
-      notifyListeners();
-    }
+  int get totalEntries => _entries.length;
+
+  bool _isSameDay(DateTime a, DateTime b) {
+    return a.year == b.year && a.month == b.month && a.day == b.day;
   }
 
-  void softDeleteEntry(String id) {
-    final int index = _allEntries.indexWhere((JournalEntry entry) => entry.id == id);
-    if (index != -1) {
-      _allEntries[index] = _allEntries[index].copyWith(isDeleted: true);
-      notifyListeners();
+  Map<DateTime, int> getMoodsForLastNDays(int n) {
+    final Map<DateTime, int> dailyMoods = {};
+    final DateTime now = DateTime.now();
+    for (int i = 0; i < n; i++) {
+      final DateTime day = DateTime(now.year, now.month, now.day).subtract(Duration(days: i));
+      dailyMoods[day] = -1;
     }
+    for (final JournalEntry entry in _entries) {
+      final DateTime entryDay = DateTime(entry.timestamp.year, entry.timestamp.month, entry.timestamp.day);
+      if (dailyMoods.containsKey(entryDay)) {
+        dailyMoods[entryDay] = entry.moodIndex;
+      }
+    }
+    return dailyMoods;
   }
 
-  void restoreEntry(String id) {
-    final int index = _allEntries.indexWhere((JournalEntry entry) => entry.id == id);
-    if (index != -1) {
-      _allEntries[index] = _allEntries[index].copyWith(isDeleted: false);
-      notifyListeners();
+  int get currentStreak {
+    if (_entries.isEmpty) {
+      return 0;
     }
-  }
-
-  void permanentlyDeleteEntry(String id) {
-    _allEntries.removeWhere((JournalEntry entry) => entry.id == id);
-    notifyListeners();
-  }
-
-  void toggleFavorite(String id) {
-    final int index = _allEntries.indexWhere((JournalEntry entry) => entry.id == id);
-    if (index != -1) {
-      _allEntries[index].isFavorite = !_allEntries[index].isFavorite;
-      notifyListeners();
+    int streak = 0;
+    DateTime tempDay = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
+    bool hasEntryForCurrentDay = _entries.any((JournalEntry entry) => _isSameDay(entry.timestamp, tempDay));
+    if (hasEntryForCurrentDay) {
+      streak = 1;
+      tempDay = tempDay.subtract(const Duration(days: 1));
+      while (true) {
+        hasEntryForCurrentDay = _entries.any((JournalEntry entry) => _isSameDay(entry.timestamp, tempDay));
+        if (hasEntryForCurrentDay) {
+          streak++;
+          tempDay = tempDay.subtract(const Duration(days: 1));
+        } else {
+          break;
+        }
+      }
     }
+    return streak;
   }
 } 

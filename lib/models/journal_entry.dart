@@ -45,66 +45,9 @@ extension MoodDetails on Mood {
 }
 
 class JournalEntry {
-  final String id;
-  String title;
-  String content;
-  Mood mood;
-  DateTime timestamp;
-  bool isFavorite;
-  bool isDeleted;
+  final String text;
+  final DateTime timestamp;
+  final int moodIndex; // 0: Very Sad, 1: Sad, 2: Happy, 3: Very Happy, 4: Excited
 
-  JournalEntry({
-    required this.id,
-    required this.title,
-    required this.content,
-    required this.mood,
-    required this.timestamp,
-    this.isFavorite = false,
-    this.isDeleted = false,
-  });
-
-  factory JournalEntry.fromMap(Map<String, dynamic> map) {
-    return JournalEntry(
-      id: map['id'] as String,
-      title: map['title'] as String,
-      content: map['content'] as String,
-      mood: Mood.values.firstWhere(
-        (Mood e) => e.toString() == 'Mood.${map['mood']}',
-      ),
-      timestamp: DateTime.parse(map['timestamp'] as String),
-      isFavorite: map['isFavorite'] as bool? ?? false,
-      isDeleted: map['isDeleted'] as bool? ?? false,
-    );
-  }
-
-  Map<String, dynamic> toMap() {
-    return <String, dynamic>{
-      'id': id,
-      'title': title,
-      'content': content,
-      'mood': mood.toString().split('.').last,
-      'timestamp': timestamp.toIso8601String(),
-      'isFavorite': isFavorite,
-      'isDeleted': isDeleted,
-    };
-  }
-
-  JournalEntry copyWith({
-    String? title,
-    String? content,
-    Mood? mood,
-    DateTime? timestamp,
-    bool? isFavorite,
-    bool? isDeleted,
-  }) {
-    return JournalEntry(
-      id: id,
-      title: title ?? this.title,
-      content: content ?? this.content,
-      mood: mood ?? this.mood,
-      timestamp: timestamp ?? this.timestamp,
-      isFavorite: isFavorite ?? this.isFavorite,
-      isDeleted: isDeleted ?? this.isDeleted,
-    );
-  }
+  JournalEntry({required this.text, required this.timestamp, required this.moodIndex});
 } 

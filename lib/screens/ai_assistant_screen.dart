@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class AIAssistantScreen extends StatefulWidget {
   const AIAssistantScreen({super.key});
@@ -23,7 +24,7 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
     // Simulate AI response
     Future.delayed(const Duration(seconds: 1), () {
       setState(() {
-        _messages.add(_ChatMessage(text: 'NUMA: $text', isUser: false, timestamp: DateTime.now()));
+        _messages.add(_ChatMessage(text: 'Numa: $text', isUser: false, timestamp: DateTime.now()));
         _isLoading = false;
       });
     });
@@ -31,86 +32,186 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: <Widget>[
-        Expanded(
-          child: ListView.builder(
-            padding: const EdgeInsets.all(16.0),
-            itemCount: _messages.length,
-            itemBuilder: (BuildContext context, int index) {
-              final _ChatMessage message = _messages[index];
-              return Align(
-                alignment: message.isUser ? Alignment.centerRight : Alignment.centerLeft,
-                child: Container(
-                  margin: const EdgeInsets.symmetric(vertical: 4.0),
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
-                  decoration: BoxDecoration(
-                    color: message.isUser
-                        ? Theme.of(context).colorScheme.primaryContainer
-                        : Theme.of(context).colorScheme.surfaceContainerHighest,
-                    borderRadius: BorderRadius.circular(16.0),
+    return Scaffold(
+      backgroundColor: const Color(0xFF232A4D),
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Numa Header
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 32,
+                    backgroundColor: const Color(0xFF313A5A),
+                    child: Icon(Icons.android, color: Colors.white, size: 32),
                   ),
-                  child: Column(
-                    crossAxisAlignment: message.isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-                    children: <Widget>[
+                  const SizedBox(width: 16),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                       Text(
-                        message.text,
-                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                              color: message.isUser
-                                  ? Theme.of(context).colorScheme.onPrimaryContainer
-                                  : Theme.of(context).colorScheme.onSurface,
-                            ),
+                        'Numa',
+                        style: GoogleFonts.poppins(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 22,
+                        ),
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '${message.timestamp.hour}:${message.timestamp.minute.toString().padLeft(2, '0')}',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: message.isUser
-                                  ? Theme.of(context).colorScheme.onPrimaryContainer.withOpacity(0.7)
-                                  : Theme.of(context).colorScheme.onSurfaceVariant,
-                              fontSize: 10,
+                      const SizedBox(height: 2),
+                      Row(
+                        children: [
+                          Container(
+                            width: 10,
+                            height: 10,
+                            decoration: const BoxDecoration(
+                              color: Color(0xFF4ADE80),
+                              shape: BoxShape.circle,
                             ),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Online & Ready to Help',
+                            style: GoogleFonts.poppins(
+                              color: const Color(0xFF4ADE80),
+                              fontWeight: FontWeight.w500,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                ),
-              );
-            },
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Row(
-            children: <Widget>[
-              Expanded(
-                child: TextField(
-                  controller: _textController,
-                  decoration: InputDecoration(
-                    hintText: 'Type your message...',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(24.0),
-                      borderSide: BorderSide.none,
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
-                  ),
-                  onSubmitted: (String value) => _sendMessage(),
-                  textInputAction: TextInputAction.send,
-                ),
+                ],
               ),
-              const SizedBox(width: 8),
-              _isLoading
-                  ? CircularProgressIndicator(color: Theme.of(context).colorScheme.primary)
-                  : FloatingActionButton.small(
-                      onPressed: _sendMessage,
-                      backgroundColor: Theme.of(context).colorScheme.primary,
-                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                      elevation: 4,
-                      child: const Icon(Icons.send),
+            ),
+            // Chat Area
+            Expanded(
+              child: _messages.isEmpty
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.android, color: Colors.white, size: 56),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Hi there! 👋',
+                            style: GoogleFonts.poppins(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 20,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          SizedBox(
+                            width: 320,
+                            child: Text(
+                              "I'm Numa, your AI wellness companion. I'm here to listen, support, and help you on your mental health journey. How are you feeling today?",
+                              style: GoogleFonts.poppins(
+                                color: Colors.white.withOpacity(0.8),
+                                fontWeight: FontWeight.w400,
+                                fontSize: 15,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  : ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                      itemCount: _messages.length,
+                      itemBuilder: (context, index) {
+                        final msg = _messages[index];
+                        return Align(
+                          alignment: msg.isUser ? Alignment.centerRight : Alignment.centerLeft,
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(vertical: 4.0),
+                            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+                            decoration: BoxDecoration(
+                              color: msg.isUser
+                                  ? const Color(0xFF7B61FF)
+                                  : const Color(0xFF313A5A),
+                              borderRadius: BorderRadius.circular(16.0),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: msg.isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                              children: <Widget>[
+                                Text(
+                                  msg.text,
+                                  style: GoogleFonts.poppins(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 15,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  '${msg.timestamp.hour}:${msg.timestamp.minute.toString().padLeft(2, '0')}',
+                                  style: GoogleFonts.poppins(
+                                    color: Colors.white.withOpacity(0.7),
+                                    fontSize: 10,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
                     ),
-            ],
-          ),
+            ),
+            // Input Bar
+            Container(
+              color: const Color(0xFF232A4D),
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF313A5A),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: TextField(
+                        controller: _textController,
+                        style: GoogleFonts.poppins(color: Colors.white),
+                        decoration: InputDecoration(
+                          hintText: 'Type your message...',
+                          hintStyle: GoogleFonts.poppins(color: Colors.white54),
+                          border: InputBorder.none,
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                        ),
+                        onSubmitted: (_) => _sendMessage(),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF7B61FF),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: IconButton(
+                      icon: _isLoading
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : const Icon(Icons.send, color: Colors.white),
+                      onPressed: _isLoading ? null : _sendMessage,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }
