@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:my_flutter/screens/login_screen.dart';
+import 'package:my_flutter/screens/auth/login_screen.dart';
 
 class GetStartedScreen extends StatelessWidget {
   const GetStartedScreen({Key? key}) : super(key: key);

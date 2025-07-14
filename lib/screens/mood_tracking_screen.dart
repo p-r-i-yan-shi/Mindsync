@@ -18,78 +18,72 @@ class _MoodTrackingScreenState extends State<MoodTrackingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF232A4D),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 24),
-                // Header with mood selection
-                Text(
-                  'Mood Tracker',
-                  style: GoogleFonts.poppins(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 28,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Track and understand your emotional patterns',
-                  style: GoogleFonts.poppins(
-                    color: Colors.white.withOpacity(0.7),
-                    fontWeight: FontWeight.w400,
-                    fontSize: 16,
-                  ),
-                ),
-                const SizedBox(height: 32),
-                
-                // How are you feeling section
-                Text(
-                  'How are you feeling?',
-                  style: GoogleFonts.poppins(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 18,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                
-                // Mood selection
-                _moodSelectionRow(),
-                const SizedBox(height: 8),
-                Center(
-                  child: Text(
-                    selectedMood,
-                    style: GoogleFonts.poppins(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
-                    ),
-                  ),
-                ),
-                
-                const SizedBox(height: 32),
-                
-                // Weekly Overview Card
-                _weeklyOverviewCard(),
-                
-                const SizedBox(height: 20),
-                
-                // Insights Card
-                _insightsCard(),
-                
-                const SizedBox(height: 32),
-              ],
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 24),
+            // Header with mood selection
+            Text(
+              'Mood Tracker',
+              style: GoogleFonts.poppins(
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+                fontSize: 28,
+              ),
             ),
-          ),
+            const SizedBox(height: 8),
+            Text(
+              'Track and understand your emotional patterns',
+              style: GoogleFonts.poppins(
+                color: Colors.white.withOpacity(0.7),
+                fontWeight: FontWeight.w400,
+                fontSize: 16,
+              ),
+            ),
+            const SizedBox(height: 32),
+            
+            // How are you feeling section
+            Text(
+              'How are you feeling?',
+              style: GoogleFonts.poppins(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+                fontSize: 18,
+              ),
+            ),
+            const SizedBox(height: 20),
+            
+            // Mood selection
+            _moodSelectionRow(),
+            const SizedBox(height: 8),
+            Center(
+              child: Text(
+                selectedMood,
+                style: GoogleFonts.poppins(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
+                ),
+              ),
+            ),
+            
+            const SizedBox(height: 32),
+            
+            // Weekly Overview Card
+            _weeklyOverviewCard(),
+            
+            const SizedBox(height: 20),
+            
+            // Insights Card
+            _insightsCard(),
+            
+            const SizedBox(height: 32),
+          ],
         ),
       ),
-      bottomNavigationBar: _customBottomNavBar(context, 3),
     );
   }
 

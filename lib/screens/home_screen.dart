@@ -1,1188 +1,694 @@
-import '/flutter_flow/flutter_flow_choice_chips.dart';
-import '/flutter_flow/flutter_flow_icon_button.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import '/flutter_flow/form_field_controller.dart';
-import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
+import 'suggestions_screen.dart';
+import 'mood_tracking_screen.dart';
+import 'profile_settings_screen.dart';
+import 'ai_assistant_screen.dart';
+// import 'chat_screen.dart'; // Uncomment and fix if you have a chat screen file
 
-import 'journal_page_model.dart';
-export 'journal_page_model.dart';
+// Data model for Journal Entry
+class JournalEntry {
+  final String id;
+  final String text;
+  final DateTime timestamp;
+  final int moodIndex;
+  final String mood;
 
-/// This screen lets users write their journal entries.
-///
-/// Add a large multi-line TextField with soft placeholder text like “How are
-/// you feeling today?” and rounded borders. Include a mood selector (emoji
-/// chips: 😊 😐 😢 😡 etc.) and a mic icon button to allow voice entry (using
-/// speech_to_text). Use a floating action button or bottom submit button.
-/// Show previously written entries in scrollable card format below. fully
-/// animated with smoth transition
-class JournalPageWidget extends StatefulWidget {
-  const JournalPageWidget({super.key});
-
-  static String routeName = 'journal_page';
-  static String routePath = '/journalPage';
-
-  @override
-  State<JournalPageWidget> createState() => _JournalPageWidgetState();
+  JournalEntry({
+    required this.id,
+    required this.text,
+    required this.timestamp,
+    required this.moodIndex,
+    required this.mood,
+  });
 }
 
-class _JournalPageWidgetState extends State<JournalPageWidget> {
-  late JournalPageModel _model;
+void main() {
+  runApp(MyApp());
+}
 
-  final scaffoldKey = GlobalKey<ScaffoldState>();
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Journal App',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        scaffoldBackgroundColor: Color(0xFF2A3441),
+        fontFamily: 'Roboto',
+      ),
+      home: HomeScreen(),
+      debugShowCheckedModeBanner: false,
+    );
+  }
+}
+
+class HomeScreen extends StatefulWidget {
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  int _currentIndex = 0;
+  List<JournalEntry> _entries = [];
+  TextEditingController _journalController = TextEditingController(text: 'hi');
+  int _selectedMoodIndex = -1;
+
+  final List<String> _moods = ['😔', '😐', '😊', '😍', '🤔'];
+  final List<String> _moodLabels = ['Sad', 'Neutral', 'Happy', 'Love', 'Thinking'];
 
   @override
   void initState() {
     super.initState();
-    _model = createModel(context, () => JournalPageModel());
-
-    _model.textController ??= TextEditingController();
-    _model.textFieldFocusNode ??= FocusNode();
+    // Add some sample entries
+    _entries = [
+      JournalEntry(
+        id: '1',
+        text: 'Had a wonderful day at the park with friends. The weather was perfect and I felt so grateful for these moments of joy and connection.',
+        timestamp: DateTime.now().subtract(Duration(days: 1)),
+        moodIndex: 2,
+        mood: '😊',
+      ),
+      JournalEntry(
+        id: '2',
+        text: 'Today was just okay. Work was stressful but I managed to get through it. Looking forward to the weekend to recharge.',
+        timestamp: DateTime.now().subtract(Duration(days: 2)),
+        moodIndex: 1,
+        mood: '😐',
+      ),
+      JournalEntry(
+        id: '3',
+        text: 'Been thinking a lot about my future goals and what I want to achieve this year. Sometimes it feels overwhelming but I know taking small steps is the key.',
+        timestamp: DateTime.now().subtract(Duration(days: 3)),
+        moodIndex: 4,
+        mood: '🤔',
+      ),
+    ];
   }
 
-  @override
-  void dispose() {
-    _model.dispose();
+  void _saveEntry() {
+    if (_journalController.text.trim().isNotEmpty) {
+      setState(() {
+        _entries.insert(
+          0,
+          JournalEntry(
+            id: DateTime.now().millisecondsSinceEpoch.toString(),
+            text: _journalController.text,
+            timestamp: DateTime.now(),
+            moodIndex: _selectedMoodIndex >= 0 ? _selectedMoodIndex : 2,
+            mood: _selectedMoodIndex >= 0 ? _moods[_selectedMoodIndex] : '😊',
+          ),
+        );
+        _journalController.clear();
+        _selectedMoodIndex = -1;
+      });
+      
+      // Show success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Journal entry saved!'),
+          backgroundColor: Colors.green,
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+  }
 
-    super.dispose();
+  void _expandEntry(JournalEntry entry) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Color(0xFF34495E),
+        title: Row(
+          children: [
+            Text(entry.mood, style: TextStyle(fontSize: 24)),
+            SizedBox(width: 8),
+            Text(
+              DateFormat('MMM dd, yyyy').format(entry.timestamp),
+              style: TextStyle(color: Colors.white, fontSize: 16),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              DateFormat('h:mm a').format(entry.timestamp),
+              style: TextStyle(color: Colors.grey[400], fontSize: 12),
+            ),
+            SizedBox(height: 12),
+            Text(
+              entry.text,
+              style: TextStyle(color: Colors.white, fontSize: 16, height: 1.4),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Close', style: TextStyle(color: Colors.blue)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHomeScreen() {
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Greeting Section
+          Container(
+            margin: EdgeInsets.all(16),
+            padding: EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Color(0xFF34495E),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 8,
+                  offset: Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: Colors.blue,
+                    borderRadius: BorderRadius.circular(25),
+                  ),
+                  child: Icon(
+                    Icons.person,
+                    color: Colors.white,
+                    size: 30,
+                  ),
+                ),
+                SizedBox(width: 16),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Hey, there!',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      'How are you feeling today?',
+                      style: TextStyle(
+                        color: Colors.grey[400],
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+                Spacer(),
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Color(0xFF2A3441),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Icon(
+                    Icons.wb_sunny,
+                    color: Colors.orange,
+                    size: 24,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Quick Mood Check Section
+          Container(
+            margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Quick Mood Check',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: List.generate(_moods.length, (index) {
+                    return GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _selectedMoodIndex = index;
+                        });
+                      },
+                      child: Container(
+                        width: 60,
+                        height: 60,
+                        decoration: BoxDecoration(
+                          color: _selectedMoodIndex == index 
+                              ? Colors.blue.withOpacity(0.3)
+                              : Color(0xFF34495E),
+                          borderRadius: BorderRadius.circular(30),
+                          border: _selectedMoodIndex == index
+                              ? Border.all(color: Colors.blue, width: 2)
+                              : null,
+                        ),
+                        child: Center(
+                          child: Text(
+                            _moods[index],
+                            style: TextStyle(fontSize: 28),
+                          ),
+                        ),
+                      ),
+                    );
+                  }),
+                ),
+                SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Text(
+                      'Tap to log',
+                      style: TextStyle(
+                        color: Colors.grey[400],
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          // Today's Journal Section
+          Container(
+            margin: EdgeInsets.all(16),
+            padding: EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Color(0xFF1C2833),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "Today's Journal",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () {
+                        // Voice input functionality
+                      },
+                      icon: Icon(
+                        Icons.mic,
+                        color: Colors.blue,
+                        size: 24,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 12),
+                Container(
+                  constraints: BoxConstraints(minHeight: 100),
+                  child: TextField(
+                    controller: _journalController,
+                    maxLines: null,
+                    style: TextStyle(color: Colors.white, fontSize: 16),
+                    decoration: InputDecoration(
+                      border: InputBorder.none,
+                      hintText: 'Share your thoughts...',
+                      hintStyle: TextStyle(color: Colors.grey[500]),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: _saveEntry,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  ),
+                  child: Text('Save Entry'),
+                ),
+              ],
+            ),
+          ),
+
+          // Recent Entries Section
+          Container(
+            margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Text(
+              'Recent Entries',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+
+          // Entries List
+          _entries.isEmpty
+              ? Container(
+                  margin: EdgeInsets.all(16),
+                  height: 200,
+                  decoration: BoxDecoration(
+                    color: Color(0xFF1C2833),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.add,
+                          size: 48,
+                          color: Colors.grey[600],
+                        ),
+                        SizedBox(height: 12),
+                        Text(
+                          'No journal entries yet',
+                          style: TextStyle(
+                            color: Colors.grey[400],
+                            fontSize: 16,
+                          ),
+                        ),
+                        Text(
+                          'Start by writing your first entry above',
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              : ListView.builder(
+                  shrinkWrap: true,
+                  physics: NeverScrollableScrollPhysics(),
+                  itemCount: _entries.length,
+                  itemBuilder: (context, index) {
+                    final entry = _entries[index];
+                    return Container(
+                      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      child: GestureDetector(
+                        onTap: () => _expandEntry(entry),
+                        child: Container(
+                          padding: EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Color(0xFF34495E),
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 6,
+                                offset: Offset(0, 1),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Text(
+                                        entry.mood,
+                                        style: TextStyle(fontSize: 18),
+                                      ),
+                                      SizedBox(width: 8),
+                                      Text(
+                                        DateFormat('MMM dd, yyyy').format(entry.timestamp),
+                                        style: TextStyle(
+                                          color: Colors.grey[400],
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  Text(
+                                    DateFormat('h:mm a').format(entry.timestamp),
+                                    style: TextStyle(
+                                      color: Colors.grey[400],
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: 8),
+                              Text(
+                                entry.text,
+                                maxLines: 3,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  height: 1.4,
+                                ),
+                              ),
+                              SizedBox(height: 8),
+                              Divider(
+                                color: Colors.grey[600],
+                                thickness: 0.5,
+                              ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  Text(
+                                    'Tap to expand',
+                                    style: TextStyle(
+                                      color: Colors.grey[400],
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+          
+          SizedBox(height: 100), // Bottom padding for navigation
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSuggestionsScreen() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.lightbulb_outline,
+            size: 80,
+            color: Colors.grey[400],
+          ),
+          SizedBox(height: 16),
+          Text(
+            'Suggestions',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          SizedBox(height: 8),
+          Text(
+            'Coming soon...',
+            style: TextStyle(
+              color: Colors.grey[400],
+              fontSize: 16,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildChatScreen() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.chat_bubble_outline,
+            size: 80,
+            color: Colors.grey[400],
+          ),
+          SizedBox(height: 16),
+          Text(
+            'Chat',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          SizedBox(height: 8),
+          Text(
+            'Coming soon...',
+            style: TextStyle(
+              color: Colors.grey[400],
+              fontSize: 16,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMoodScreen() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.mood,
+            size: 80,
+            color: Colors.grey[400],
+          ),
+          SizedBox(height: 16),
+          Text(
+            'Mood Tracker',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          SizedBox(height: 8),
+          Text(
+            'Coming soon...',
+            style: TextStyle(
+              color: Colors.grey[400],
+              fontSize: 16,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProfileScreen() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.person_outline,
+            size: 80,
+            color: Colors.grey[400],
+          ),
+          SizedBox(height: 16),
+          Text(
+            'Profile',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          SizedBox(height: 8),
+          Text(
+            'Coming soon...',
+            style: TextStyle(
+              color: Colors.grey[400],
+              fontSize: 16,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        FocusScope.of(context).unfocus();
-        FocusManager.instance.primaryFocus?.unfocus();
-      },
-      child: Scaffold(
-        key: scaffoldKey,
-        backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
-        appBar: AppBar(
-          backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
-          automaticallyImplyLeading: false,
-          title: Row(
-            mainAxisSize: MainAxisSize.max,
-            children: [
-              Icon(
-                Icons.book,
-                color: FlutterFlowTheme.of(context).primary,
-                size: 28,
-              ),
-              Text(
-                'My Journal',
-                style: FlutterFlowTheme.of(context).headlineMedium.override(
-                      font: GoogleFonts.interTight(
-                        fontWeight: FontWeight.bold,
-                        fontStyle: FlutterFlowTheme.of(context)
-                            .headlineMedium
-                            .fontStyle,
-                      ),
-                      letterSpacing: 0.0,
-                      fontWeight: FontWeight.bold,
-                      fontStyle:
-                          FlutterFlowTheme.of(context).headlineMedium.fontStyle,
-                    ),
-              ),
-            ].divide(SizedBox(width: 12)),
+    return Scaffold(
+      backgroundColor: Color(0xFF2A3441),
+      body: SafeArea(
+        child: IndexedStack(
+          index: _currentIndex,
+          children: [
+            _buildHomeScreen(),
+            SuggestionsScreen(),
+            AIAssistantScreen(),
+            MoodTrackingScreen(),
+            ProfileSettingsScreen(),
+          ],
+        ),
+      ),
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: Color(0xFF2A3441),
+          border: Border(
+            top: BorderSide(color: Colors.grey[800]!, width: 0.5),
           ),
-          actions: [
-            Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(16, 0, 16, 0),
-              child: FlutterFlowIconButton(
-                borderRadius: 20,
-                buttonSize: 40,
-                icon: Icon(
-                  Icons.search,
-                  color: FlutterFlowTheme.of(context).primaryText,
-                  size: 24,
-                ),
-                onPressed: () {
-                  print('IconButton pressed ...');
-                },
-              ),
+        ),
+        child: BottomNavigationBar(
+          currentIndex: _currentIndex,
+          onTap: (index) {
+            setState(() {
+              _currentIndex = index;
+            });
+          },
+          type: BottomNavigationBarType.fixed,
+          backgroundColor: Color(0xFF2A3441),
+          selectedItemColor: Colors.blue,
+          unselectedItemColor: Colors.grey[400],
+          selectedFontSize: 12,
+          unselectedFontSize: 12,
+          items: [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home),
+              label: 'Home',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.lightbulb_outline),
+              label: 'Suggestions',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.chat_bubble_outline),
+              label: 'Chat',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.mood),
+              label: 'Mood',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.person),
+              label: 'Profile',
             ),
           ],
-          centerTitle: false,
-          elevation: 0,
-        ),
-        body: SafeArea(
-          top: true,
-          child: Column(
-            mainAxisSize: MainAxisSize.max,
-            children: [
-              Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(16, 16, 16, 8),
-                child: Container(
-                  width: double.infinity,
-                  height: 200,
-                  decoration: BoxDecoration(
-                    color: FlutterFlowTheme.of(context).secondaryBackground,
-                    boxShadow: [
-                      BoxShadow(
-                        blurRadius: 8,
-                        color: Color(0x1A000000),
-                        offset: Offset(
-                          0.0,
-                          2,
-                        ),
-                      )
-                    ],
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Padding(
-                    padding: EdgeInsets.all(16),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.max,
-                      children: [
-                        Row(
-                          mainAxisSize: MainAxisSize.max,
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'How are you feeling today?',
-                              style: FlutterFlowTheme.of(context)
-                                  .titleMedium
-                                  .override(
-                                    font: GoogleFonts.interTight(
-                                      fontWeight: FontWeight.w600,
-                                      fontStyle: FlutterFlowTheme.of(context)
-                                          .titleMedium
-                                          .fontStyle,
-                                    ),
-                                    letterSpacing: 0.0,
-                                    fontWeight: FontWeight.w600,
-                                    fontStyle: FlutterFlowTheme.of(context)
-                                        .titleMedium
-                                        .fontStyle,
-                                  ),
-                            ),
-                            FlutterFlowIconButton(
-                              borderRadius: 20,
-                              buttonSize: 40,
-                              fillColor: FlutterFlowTheme.of(context).primary,
-                              icon: Icon(
-                                Icons.mic,
-                                color: Colors.white,
-                                size: 20,
-                              ),
-                              onPressed: () {
-                                print('IconButton pressed ...');
-                              },
-                            ),
-                          ],
-                        ),
-                        Expanded(
-                          child: TextFormField(
-                            controller: _model.textController,
-                            focusNode: _model.textFieldFocusNode,
-                            autofocus: false,
-                            obscureText: false,
-                            decoration: InputDecoration(
-                              hintText:
-                                  'Share your thoughts, feelings, and experiences...',
-                              hintStyle: FlutterFlowTheme.of(context)
-                                  .bodyMedium
-                                  .override(
-                                    font: GoogleFonts.inter(
-                                      fontWeight: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .fontWeight,
-                                      fontStyle: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .fontStyle,
-                                    ),
-                                    color: FlutterFlowTheme.of(context)
-                                        .secondaryText,
-                                    fontSize: 16,
-                                    letterSpacing: 0.0,
-                                    fontWeight: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .fontWeight,
-                                    fontStyle: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .fontStyle,
-                                  ),
-                              enabledBorder: OutlineInputBorder(
-                                borderSide: BorderSide(
-                                  color: FlutterFlowTheme.of(context).alternate,
-                                  width: 1,
-                                ),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderSide: BorderSide(
-                                  color: FlutterFlowTheme.of(context).primary,
-                                  width: 1,
-                                ),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              errorBorder: OutlineInputBorder(
-                                borderSide: BorderSide(
-                                  color: Color(0x00000000),
-                                  width: 1,
-                                ),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              focusedErrorBorder: OutlineInputBorder(
-                                borderSide: BorderSide(
-                                  color: Color(0x00000000),
-                                  width: 1,
-                                ),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              filled: true,
-                              fillColor: FlutterFlowTheme.of(context)
-                                  .primaryBackground,
-                              contentPadding: EdgeInsets.all(16),
-                            ),
-                            style: FlutterFlowTheme.of(context)
-                                .bodyMedium
-                                .override(
-                                  font: GoogleFonts.inter(
-                                    fontWeight: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .fontWeight,
-                                    fontStyle: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .fontStyle,
-                                  ),
-                                  fontSize: 16,
-                                  letterSpacing: 0.0,
-                                  fontWeight: FlutterFlowTheme.of(context)
-                                      .bodyMedium
-                                      .fontWeight,
-                                  fontStyle: FlutterFlowTheme.of(context)
-                                      .bodyMedium
-                                      .fontStyle,
-                                  lineHeight: 1.4,
-                                ),
-                            maxLines: 6,
-                            keyboardType: TextInputType.multiline,
-                            cursorColor: FlutterFlowTheme.of(context).primary,
-                            validator: _model.textControllerValidator
-                                .asValidator(context),
-                          ),
-                        ),
-                        FlutterFlowChoiceChips(
-                          options: [
-                            ChipData('😊'),
-                            ChipData('😐'),
-                            ChipData('😢'),
-                            ChipData('😡'),
-                            ChipData('😴'),
-                            ChipData('🤔'),
-                            ChipData('😍'),
-                            ChipData('😰')
-                          ],
-                          onChanged: (val) => safeSetState(
-                              () => _model.choiceChipsValue = val?.firstOrNull),
-                          selectedChipStyle: ChipStyle(
-                            backgroundColor:
-                                FlutterFlowTheme.of(context).accent1,
-                            textStyle: TextStyle(
-                              fontSize: 20,
-                            ),
-                            iconColor: Color(0x00000000),
-                            iconSize: 0,
-                            labelPadding:
-                                EdgeInsetsDirectional.fromSTEB(12, 8, 12, 8),
-                            elevation: 2,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          unselectedChipStyle: ChipStyle(
-                            backgroundColor:
-                                FlutterFlowTheme.of(context).primaryBackground,
-                            textStyle: TextStyle(
-                              fontSize: 20,
-                            ),
-                            iconColor: Color(0x00000000),
-                            iconSize: 0,
-                            labelPadding:
-                                EdgeInsetsDirectional.fromSTEB(12, 8, 12, 8),
-                            elevation: 1,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          chipSpacing: 8,
-                          rowSpacing: 8,
-                          multiselect: false,
-                          controller: _model.choiceChipsValueController ??=
-                              FormFieldController<List<String>>(
-                            [],
-                          ),
-                          wrapped: true,
-                        ),
-                      ].divide(SizedBox(height: 12)),
-                    ),
-                  ),
-                ),
-              ),
-              Align(
-                alignment: AlignmentDirectional(0, 0),
-                child: Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(16, 0, 16, 0),
-                  child: Container(
-                    width: double.infinity,
-                    height: 60,
-                    decoration: BoxDecoration(
-                      color: FlutterFlowTheme.of(context).secondaryBackground,
-                      boxShadow: [
-                        BoxShadow(
-                          blurRadius: 8,
-                          color: Color(0x1A000000),
-                          offset: Offset(
-                            0.0,
-                            2,
-                          ),
-                        )
-                      ],
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Padding(
-                      padding: EdgeInsets.all(12),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.max,
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
-                            mainAxisSize: MainAxisSize.max,
-                            children: [
-                              Icon(
-                                Icons.calendar_today,
-                                color:
-                                    FlutterFlowTheme.of(context).secondaryText,
-                                size: 20,
-                              ),
-                              Text(
-                                'Today\'s Entry',
-                                style: FlutterFlowTheme.of(context)
-                                    .bodyMedium
-                                    .override(
-                                      font: GoogleFonts.inter(
-                                        fontWeight: FontWeight.w500,
-                                        fontStyle: FlutterFlowTheme.of(context)
-                                            .bodyMedium
-                                            .fontStyle,
-                                      ),
-                                      color: FlutterFlowTheme.of(context)
-                                          .secondaryText,
-                                      letterSpacing: 0.0,
-                                      fontWeight: FontWeight.w500,
-                                      fontStyle: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .fontStyle,
-                                    ),
-                              ),
-                            ].divide(SizedBox(width: 12)),
-                          ),
-                          FFButtonWidget(
-                            onPressed: () {
-                              print('Button pressed ...');
-                            },
-                            text: 'Save Entry',
-                            options: FFButtonOptions(
-                              height: 40,
-                              padding:
-                                  EdgeInsetsDirectional.fromSTEB(20, 0, 20, 0),
-                              iconPadding:
-                                  EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
-                              color: FlutterFlowTheme.of(context).primary,
-                              textStyle: FlutterFlowTheme.of(context)
-                                  .titleSmall
-                                  .override(
-                                    font: GoogleFonts.interTight(
-                                      fontWeight: FontWeight.w600,
-                                      fontStyle: FlutterFlowTheme.of(context)
-                                          .titleSmall
-                                          .fontStyle,
-                                    ),
-                                    color: Colors.white,
-                                    letterSpacing: 0.0,
-                                    fontWeight: FontWeight.w600,
-                                    fontStyle: FlutterFlowTheme.of(context)
-                                        .titleSmall
-                                        .fontStyle,
-                                  ),
-                              elevation: 2,
-                              borderSide: BorderSide(
-                                color: Colors.transparent,
-                              ),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(16, 24, 16, 12),
-                child: Text(
-                  'Previous Entries',
-                  style: FlutterFlowTheme.of(context).titleMedium.override(
-                        font: GoogleFonts.interTight(
-                          fontWeight: FontWeight.w600,
-                          fontStyle: FlutterFlowTheme.of(context)
-                              .titleMedium
-                              .fontStyle,
-                        ),
-                        letterSpacing: 0.0,
-                        fontWeight: FontWeight.w600,
-                        fontStyle:
-                            FlutterFlowTheme.of(context).titleMedium.fontStyle,
-                      ),
-                ),
-              ),
-              ListView(
-                padding: EdgeInsets.fromLTRB(
-                  0,
-                  8,
-                  0,
-                  100,
-                ),
-                shrinkWrap: true,
-                scrollDirection: Axis.vertical,
-                children: [
-                  Padding(
-                    padding: EdgeInsetsDirectional.fromSTEB(16, 16, 16, 0),
-                    child: Container(
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: FlutterFlowTheme.of(context).secondaryBackground,
-                        boxShadow: [
-                          BoxShadow(
-                            blurRadius: 6,
-                            color: Color(0x0D000000),
-                            offset: Offset(
-                              0.0,
-                              1,
-                            ),
-                          )
-                        ],
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Padding(
-                        padding: EdgeInsets.all(16),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.max,
-                          children: [
-                            Row(
-                              mainAxisSize: MainAxisSize.max,
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(
-                                  mainAxisSize: MainAxisSize.max,
-                                  children: [
-                                    Text(
-                                      '😊',
-                                      style: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .override(
-                                            font: GoogleFonts.inter(
-                                              fontWeight:
-                                                  FlutterFlowTheme.of(context)
-                                                      .bodyMedium
-                                                      .fontWeight,
-                                              fontStyle:
-                                                  FlutterFlowTheme.of(context)
-                                                      .bodyMedium
-                                                      .fontStyle,
-                                            ),
-                                            fontSize: 18,
-                                            letterSpacing: 0.0,
-                                            fontWeight:
-                                                FlutterFlowTheme.of(context)
-                                                    .bodyMedium
-                                                    .fontWeight,
-                                            fontStyle:
-                                                FlutterFlowTheme.of(context)
-                                                    .bodyMedium
-                                                    .fontStyle,
-                                          ),
-                                    ),
-                                    Text(
-                                      'March 15, 2024',
-                                      style: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .override(
-                                            font: GoogleFonts.inter(
-                                              fontWeight:
-                                                  FlutterFlowTheme.of(context)
-                                                      .bodyMedium
-                                                      .fontWeight,
-                                              fontStyle:
-                                                  FlutterFlowTheme.of(context)
-                                                      .bodyMedium
-                                                      .fontStyle,
-                                            ),
-                                            color: FlutterFlowTheme.of(context)
-                                                .secondaryText,
-                                            fontSize: 14,
-                                            letterSpacing: 0.0,
-                                            fontWeight:
-                                                FlutterFlowTheme.of(context)
-                                                    .bodyMedium
-                                                    .fontWeight,
-                                            fontStyle:
-                                                FlutterFlowTheme.of(context)
-                                                    .bodyMedium
-                                                    .fontStyle,
-                                          ),
-                                    ),
-                                  ].divide(SizedBox(width: 8)),
-                                ),
-                                Text(
-                                  '2:30 PM',
-                                  style: FlutterFlowTheme.of(context)
-                                      .bodySmall
-                                      .override(
-                                        font: GoogleFonts.inter(
-                                          fontWeight:
-                                              FlutterFlowTheme.of(context)
-                                                  .bodySmall
-                                                  .fontWeight,
-                                          fontStyle:
-                                              FlutterFlowTheme.of(context)
-                                                  .bodySmall
-                                                  .fontStyle,
-                                        ),
-                                        color: FlutterFlowTheme.of(context)
-                                            .secondaryText,
-                                        letterSpacing: 0.0,
-                                        fontWeight: FlutterFlowTheme.of(context)
-                                            .bodySmall
-                                            .fontWeight,
-                                        fontStyle: FlutterFlowTheme.of(context)
-                                            .bodySmall
-                                            .fontStyle,
-                                      ),
-                                ),
-                              ],
-                            ),
-                            Text(
-                              'Had a wonderful day at the park with friends. The weather was perfect and I felt so grateful for these moments of joy and connection.',
-                              maxLines: 3,
-                              style: FlutterFlowTheme.of(context)
-                                  .bodyMedium
-                                  .override(
-                                    font: GoogleFonts.inter(
-                                      fontWeight: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .fontWeight,
-                                      fontStyle: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .fontStyle,
-                                    ),
-                                    letterSpacing: 0.0,
-                                    fontWeight: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .fontWeight,
-                                    fontStyle: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .fontStyle,
-                                    lineHeight: 1.4,
-                                  ),
-                            ),
-                            Divider(
-                              height: 1,
-                              thickness: 0.5,
-                              color: FlutterFlowTheme.of(context).alternate,
-                            ),
-                            Row(
-                              mainAxisSize: MainAxisSize.max,
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                Text(
-                                  'Tap to expand',
-                                  style: FlutterFlowTheme.of(context)
-                                      .bodySmall
-                                      .override(
-                                        font: GoogleFonts.inter(
-                                          fontWeight:
-                                              FlutterFlowTheme.of(context)
-                                                  .bodySmall
-                                                  .fontWeight,
-                                          fontStyle:
-                                              FlutterFlowTheme.of(context)
-                                                  .bodySmall
-                                                  .fontStyle,
-                                        ),
-                                        color: FlutterFlowTheme.of(context)
-                                            .secondaryText,
-                                        fontSize: 12,
-                                        letterSpacing: 0.0,
-                                        fontWeight: FlutterFlowTheme.of(context)
-                                            .bodySmall
-                                            .fontWeight,
-                                        fontStyle: FlutterFlowTheme.of(context)
-                                            .bodySmall
-                                            .fontStyle,
-                                      ),
-                                ),
-                              ],
-                            ),
-                          ].divide(SizedBox(height: 12)),
-                        ),
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: EdgeInsetsDirectional.fromSTEB(16, 16, 16, 0),
-                    child: Container(
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: FlutterFlowTheme.of(context).secondaryBackground,
-                        boxShadow: [
-                          BoxShadow(
-                            blurRadius: 6,
-                            color: Color(0x0D000000),
-                            offset: Offset(
-                              0.0,
-                              1,
-                            ),
-                          )
-                        ],
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Padding(
-                        padding: EdgeInsets.all(16),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.max,
-                          children: [
-                            Row(
-                              mainAxisSize: MainAxisSize.max,
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(
-                                  mainAxisSize: MainAxisSize.max,
-                                  children: [
-                                    Text(
-                                      '😐',
-                                      style: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .override(
-                                            font: GoogleFonts.inter(
-                                              fontWeight:
-                                                  FlutterFlowTheme.of(context)
-                                                      .bodyMedium
-                                                      .fontWeight,
-                                              fontStyle:
-                                                  FlutterFlowTheme.of(context)
-                                                      .bodyMedium
-                                                      .fontStyle,
-                                            ),
-                                            fontSize: 18,
-                                            letterSpacing: 0.0,
-                                            fontWeight:
-                                                FlutterFlowTheme.of(context)
-                                                    .bodyMedium
-                                                    .fontWeight,
-                                            fontStyle:
-                                                FlutterFlowTheme.of(context)
-                                                    .bodyMedium
-                                                    .fontStyle,
-                                          ),
-                                    ),
-                                    Text(
-                                      'March 14, 2024',
-                                      style: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .override(
-                                            font: GoogleFonts.inter(
-                                              fontWeight:
-                                                  FlutterFlowTheme.of(context)
-                                                      .bodyMedium
-                                                      .fontWeight,
-                                              fontStyle:
-                                                  FlutterFlowTheme.of(context)
-                                                      .bodyMedium
-                                                      .fontStyle,
-                                            ),
-                                            color: FlutterFlowTheme.of(context)
-                                                .secondaryText,
-                                            fontSize: 14,
-                                            letterSpacing: 0.0,
-                                            fontWeight:
-                                                FlutterFlowTheme.of(context)
-                                                    .bodyMedium
-                                                    .fontWeight,
-                                            fontStyle:
-                                                FlutterFlowTheme.of(context)
-                                                    .bodyMedium
-                                                    .fontStyle,
-                                          ),
-                                    ),
-                                  ].divide(SizedBox(width: 8)),
-                                ),
-                                Text(
-                                  '6:45 PM',
-                                  style: FlutterFlowTheme.of(context)
-                                      .bodySmall
-                                      .override(
-                                        font: GoogleFonts.inter(
-                                          fontWeight:
-                                              FlutterFlowTheme.of(context)
-                                                  .bodySmall
-                                                  .fontWeight,
-                                          fontStyle:
-                                              FlutterFlowTheme.of(context)
-                                                  .bodySmall
-                                                  .fontStyle,
-                                        ),
-                                        color: FlutterFlowTheme.of(context)
-                                            .secondaryText,
-                                        letterSpacing: 0.0,
-                                        fontWeight: FlutterFlowTheme.of(context)
-                                            .bodySmall
-                                            .fontWeight,
-                                        fontStyle: FlutterFlowTheme.of(context)
-                                            .bodySmall
-                                            .fontStyle,
-                                      ),
-                                ),
-                              ],
-                            ),
-                            Text(
-                              'Today was just okay. Work was stressful but I managed to get through it. Looking forward to the weekend to recharge and spend time on things I enjoy.',
-                              maxLines: 3,
-                              style: FlutterFlowTheme.of(context)
-                                  .bodyMedium
-                                  .override(
-                                    font: GoogleFonts.inter(
-                                      fontWeight: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .fontWeight,
-                                      fontStyle: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .fontStyle,
-                                    ),
-                                    letterSpacing: 0.0,
-                                    fontWeight: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .fontWeight,
-                                    fontStyle: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .fontStyle,
-                                    lineHeight: 1.4,
-                                  ),
-                            ),
-                            Divider(
-                              height: 1,
-                              thickness: 0.5,
-                              color: FlutterFlowTheme.of(context).alternate,
-                            ),
-                            Row(
-                              mainAxisSize: MainAxisSize.max,
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                Text(
-                                  'Tap to expand',
-                                  style: FlutterFlowTheme.of(context)
-                                      .bodySmall
-                                      .override(
-                                        font: GoogleFonts.inter(
-                                          fontWeight:
-                                              FlutterFlowTheme.of(context)
-                                                  .bodySmall
-                                                  .fontWeight,
-                                          fontStyle:
-                                              FlutterFlowTheme.of(context)
-                                                  .bodySmall
-                                                  .fontStyle,
-                                        ),
-                                        color: FlutterFlowTheme.of(context)
-                                            .secondaryText,
-                                        fontSize: 12,
-                                        letterSpacing: 0.0,
-                                        fontWeight: FlutterFlowTheme.of(context)
-                                            .bodySmall
-                                            .fontWeight,
-                                        fontStyle: FlutterFlowTheme.of(context)
-                                            .bodySmall
-                                            .fontStyle,
-                                      ),
-                                ),
-                              ],
-                            ),
-                          ].divide(SizedBox(height: 12)),
-                        ),
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: EdgeInsetsDirectional.fromSTEB(16, 16, 16, 0),
-                    child: Container(
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: FlutterFlowTheme.of(context).secondaryBackground,
-                        boxShadow: [
-                          BoxShadow(
-                            blurRadius: 6,
-                            color: Color(0x0D000000),
-                            offset: Offset(
-                              0.0,
-                              1,
-                            ),
-                          )
-                        ],
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Padding(
-                        padding: EdgeInsets.all(16),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.max,
-                          children: [
-                            Row(
-                              mainAxisSize: MainAxisSize.max,
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(
-                                  mainAxisSize: MainAxisSize.max,
-                                  children: [
-                                    Text(
-                                      '🤔',
-                                      style: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .override(
-                                            font: GoogleFonts.inter(
-                                              fontWeight:
-                                                  FlutterFlowTheme.of(context)
-                                                      .bodyMedium
-                                                      .fontWeight,
-                                              fontStyle:
-                                                  FlutterFlowTheme.of(context)
-                                                      .bodyMedium
-                                                      .fontStyle,
-                                            ),
-                                            fontSize: 18,
-                                            letterSpacing: 0.0,
-                                            fontWeight:
-                                                FlutterFlowTheme.of(context)
-                                                    .bodyMedium
-                                                    .fontWeight,
-                                            fontStyle:
-                                                FlutterFlowTheme.of(context)
-                                                    .bodyMedium
-                                                    .fontStyle,
-                                          ),
-                                    ),
-                                    Text(
-                                      'March 13, 2024',
-                                      style: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .override(
-                                            font: GoogleFonts.inter(
-                                              fontWeight:
-                                                  FlutterFlowTheme.of(context)
-                                                      .bodyMedium
-                                                      .fontWeight,
-                                              fontStyle:
-                                                  FlutterFlowTheme.of(context)
-                                                      .bodyMedium
-                                                      .fontStyle,
-                                            ),
-                                            color: FlutterFlowTheme.of(context)
-                                                .secondaryText,
-                                            fontSize: 14,
-                                            letterSpacing: 0.0,
-                                            fontWeight:
-                                                FlutterFlowTheme.of(context)
-                                                    .bodyMedium
-                                                    .fontWeight,
-                                            fontStyle:
-                                                FlutterFlowTheme.of(context)
-                                                    .bodyMedium
-                                                    .fontStyle,
-                                          ),
-                                    ),
-                                  ].divide(SizedBox(width: 8)),
-                                ),
-                                Text(
-                                  '9:15 AM',
-                                  style: FlutterFlowTheme.of(context)
-                                      .bodySmall
-                                      .override(
-                                        font: GoogleFonts.inter(
-                                          fontWeight:
-                                              FlutterFlowTheme.of(context)
-                                                  .bodySmall
-                                                  .fontWeight,
-                                          fontStyle:
-                                              FlutterFlowTheme.of(context)
-                                                  .bodySmall
-                                                  .fontStyle,
-                                        ),
-                                        color: FlutterFlowTheme.of(context)
-                                            .secondaryText,
-                                        letterSpacing: 0.0,
-                                        fontWeight: FlutterFlowTheme.of(context)
-                                            .bodySmall
-                                            .fontWeight,
-                                        fontStyle: FlutterFlowTheme.of(context)
-                                            .bodySmall
-                                            .fontStyle,
-                                      ),
-                                ),
-                              ],
-                            ),
-                            Text(
-                              'Been thinking a lot about my future goals and what I want to achieve this year. Sometimes it feels overwhelming but I know taking small steps is the key.',
-                              maxLines: 3,
-                              style: FlutterFlowTheme.of(context)
-                                  .bodyMedium
-                                  .override(
-                                    font: GoogleFonts.inter(
-                                      fontWeight: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .fontWeight,
-                                      fontStyle: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .fontStyle,
-                                    ),
-                                    letterSpacing: 0.0,
-                                    fontWeight: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .fontWeight,
-                                    fontStyle: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .fontStyle,
-                                    lineHeight: 1.4,
-                                  ),
-                            ),
-                            Divider(
-                              height: 1,
-                              thickness: 0.5,
-                              color: FlutterFlowTheme.of(context).alternate,
-                            ),
-                            Row(
-                              mainAxisSize: MainAxisSize.max,
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                Text(
-                                  'Tap to expand',
-                                  style: FlutterFlowTheme.of(context)
-                                      .bodySmall
-                                      .override(
-                                        font: GoogleFonts.inter(
-                                          fontWeight:
-                                              FlutterFlowTheme.of(context)
-                                                  .bodySmall
-                                                  .fontWeight,
-                                          fontStyle:
-                                              FlutterFlowTheme.of(context)
-                                                  .bodySmall
-                                                  .fontStyle,
-                                        ),
-                                        color: FlutterFlowTheme.of(context)
-                                            .secondaryText,
-                                        fontSize: 12,
-                                        letterSpacing: 0.0,
-                                        fontWeight: FlutterFlowTheme.of(context)
-                                            .bodySmall
-                                            .fontWeight,
-                                        fontStyle: FlutterFlowTheme.of(context)
-                                            .bodySmall
-                                            .fontStyle,
-                                      ),
-                                ),
-                              ],
-                            ),
-                          ].divide(SizedBox(height: 12)),
-                        ),
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: EdgeInsetsDirectional.fromSTEB(16, 16, 16, 0),
-                    child: Container(
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: FlutterFlowTheme.of(context).secondaryBackground,
-                        boxShadow: [
-                          BoxShadow(
-                            blurRadius: 6,
-                            color: Color(0x0D000000),
-                            offset: Offset(
-                              0.0,
-                              1,
-                            ),
-                          )
-                        ],
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Padding(
-                        padding: EdgeInsets.all(16),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.max,
-                          children: [
-                            Row(
-                              mainAxisSize: MainAxisSize.max,
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(
-                                  mainAxisSize: MainAxisSize.max,
-                                  children: [
-                                    Text(
-                                      '😍',
-                                      style: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .override(
-                                            font: GoogleFonts.inter(
-                                              fontWeight:
-                                                  FlutterFlowTheme.of(context)
-                                                      .bodyMedium
-                                                      .fontWeight,
-                                              fontStyle:
-                                                  FlutterFlowTheme.of(context)
-                                                      .bodyMedium
-                                                      .fontStyle,
-                                            ),
-                                            fontSize: 18,
-                                            letterSpacing: 0.0,
-                                            fontWeight:
-                                                FlutterFlowTheme.of(context)
-                                                    .bodyMedium
-                                                    .fontWeight,
-                                            fontStyle:
-                                                FlutterFlowTheme.of(context)
-                                                    .bodyMedium
-                                                    .fontStyle,
-                                          ),
-                                    ),
-                                    Text(
-                                      'March 12, 2024',
-                                      style: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .override(
-                                            font: GoogleFonts.inter(
-                                              fontWeight:
-                                                  FlutterFlowTheme.of(context)
-                                                      .bodyMedium
-                                                      .fontWeight,
-                                              fontStyle:
-                                                  FlutterFlowTheme.of(context)
-                                                      .bodyMedium
-                                                      .fontStyle,
-                                            ),
-                                            color: FlutterFlowTheme.of(context)
-                                                .secondaryText,
-                                            fontSize: 14,
-                                            letterSpacing: 0.0,
-                                            fontWeight:
-                                                FlutterFlowTheme.of(context)
-                                                    .bodyMedium
-                                                    .fontWeight,
-                                            fontStyle:
-                                                FlutterFlowTheme.of(context)
-                                                    .bodyMedium
-                                                    .fontStyle,
-                                          ),
-                                    ),
-                                  ].divide(SizedBox(width: 8)),
-                                ),
-                                Text(
-                                  '7:20 PM',
-                                  style: FlutterFlowTheme.of(context)
-                                      .bodySmall
-                                      .override(
-                                        font: GoogleFonts.inter(
-                                          fontWeight:
-                                              FlutterFlowTheme.of(context)
-                                                  .bodySmall
-                                                  .fontWeight,
-                                          fontStyle:
-                                              FlutterFlowTheme.of(context)
-                                                  .bodySmall
-                                                  .fontStyle,
-                                        ),
-                                        color: FlutterFlowTheme.of(context)
-                                            .secondaryText,
-                                        letterSpacing: 0.0,
-                                        fontWeight: FlutterFlowTheme.of(context)
-                                            .bodySmall
-                                            .fontWeight,
-                                        fontStyle: FlutterFlowTheme.of(context)
-                                            .bodySmall
-                                            .fontStyle,
-                                      ),
-                                ),
-                              ],
-                            ),
-                            Text(
-                              'Amazing dinner with my family tonight! We laughed so much and shared stories. These are the moments that make life beautiful and meaningful.',
-                              maxLines: 3,
-                              style: FlutterFlowTheme.of(context)
-                                  .bodyMedium
-                                  .override(
-                                    font: GoogleFonts.inter(
-                                      fontWeight: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .fontWeight,
-                                      fontStyle: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .fontStyle,
-                                    ),
-                                    letterSpacing: 0.0,
-                                    fontWeight: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .fontWeight,
-                                    fontStyle: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .fontStyle,
-                                    lineHeight: 1.4,
-                                  ),
-                            ),
-                            Divider(
-                              height: 1,
-                              thickness: 0.5,
-                              color: FlutterFlowTheme.of(context).alternate,
-                            ),
-                            Row(
-                              mainAxisSize: MainAxisSize.max,
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                Text(
-                                  'Tap to expand',
-                                  style: FlutterFlowTheme.of(context)
-                                      .bodySmall
-                                      .override(
-                                        font: GoogleFonts.inter(
-                                          fontWeight:
-                                              FlutterFlowTheme.of(context)
-                                                  .bodySmall
-                                                  .fontWeight,
-                                          fontStyle:
-                                              FlutterFlowTheme.of(context)
-                                                  .bodySmall
-                                                  .fontStyle,
-                                        ),
-                                        color: FlutterFlowTheme.of(context)
-                                            .secondaryText,
-                                        fontSize: 12,
-                                        letterSpacing: 0.0,
-                                        fontWeight: FlutterFlowTheme.of(context)
-                                            .bodySmall
-                                            .fontWeight,
-                                        fontStyle: FlutterFlowTheme.of(context)
-                                            .bodySmall
-                                            .fontStyle,
-                                      ),
-                                ),
-                              ],
-                            ),
-                          ].divide(SizedBox(height: 12)),
-                        ),
-                      ),
-                    ),
-                  ),
-                ].divide(SizedBox(height: 12)),
-              ),
-            ],
-          ),
         ),
       ),
     );

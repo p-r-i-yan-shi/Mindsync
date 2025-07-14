@@ -9,173 +9,169 @@ class ProfileSettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF232A4D),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 32),
-                Text(
-                  'Profile',
-                  style: GoogleFonts.poppins(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 24,
-                  ),
+    return SafeArea(
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 32),
+              Text(
+                'Profile',
+                style: GoogleFonts.poppins(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 24,
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  'Your wellness journey & settings',
-                  style: GoogleFonts.poppins(
-                    color: Colors.white.withOpacity(0.7),
-                    fontWeight: FontWeight.w400,
-                    fontSize: 15,
-                  ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Your wellness journey & settings',
+                style: GoogleFonts.poppins(
+                  color: Colors.white.withOpacity(0.7),
+                  fontWeight: FontWeight.w400,
+                  fontSize: 15,
                 ),
-                const SizedBox(height: 28),
-                // Profile Card
-                Container(
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF7B61FF), Color(0xFF8B5CF6)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
+              ),
+              const SizedBox(height: 28),
+              // Profile Card
+              Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF7B61FF), Color(0xFF8B5CF6)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                padding: const EdgeInsets.all(20),
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 32,
+                      backgroundColor: Colors.white.withOpacity(0.2),
+                      child: Text(
+                        't',
+                        style: GoogleFonts.poppins(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 28,
+                        ),
+                      ),
                     ),
-                    borderRadius: BorderRadius.circular(18),
-                  ),
-                  padding: const EdgeInsets.all(20),
-                  child: Row(
-                    children: [
-                      CircleAvatar(
-                        radius: 32,
-                        backgroundColor: Colors.white.withOpacity(0.2),
-                        child: Text(
-                          't',
-                          style: GoogleFonts.poppins(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 28,
+                    const SizedBox(width: 18),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Wellness Explorer',
+                            style: GoogleFonts.poppins(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 18,
+                            ),
                           ),
-                        ),
-                      ),
-                      const SizedBox(width: 18),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Wellness Explorer',
-                              style: GoogleFonts.poppins(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 18,
-                              ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'test@example.com',
+                            style: GoogleFonts.poppins(
+                              color: Colors.white.withOpacity(0.8),
+                              fontWeight: FontWeight.w400,
+                              fontSize: 14,
                             ),
-                            const SizedBox(height: 2),
-                            Text(
-                              'test@example.com',
-                              style: GoogleFonts.poppins(
-                                color: Colors.white.withOpacity(0.8),
-                                fontWeight: FontWeight.w400,
-                                fontSize: 14,
-                              ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Member since Recently',
+                            style: GoogleFonts.poppins(
+                              color: Colors.white.withOpacity(0.7),
+                              fontWeight: FontWeight.w400,
+                              fontSize: 13,
                             ),
-                            const SizedBox(height: 2),
-                            Text(
-                              'Member since Recently',
-                              style: GoogleFonts.poppins(
-                                color: Colors.white.withOpacity(0.7),
-                                fontWeight: FontWeight.w400,
-                                fontSize: 13,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 24),
-                // Stats
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    _statCard('0', 'Journal Entries'),
-                    _statCard('0', 'Day Streak'),
-                  ],
-                ),
-                const SizedBox(height: 24),
-                // Achievements
-                Text(
-                  'Achievements',
-                  style: GoogleFonts.poppins(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    _achievementCard(Icons.star_border, 'First Entry'),
-                    _achievementCard(Icons.calendar_today, '7 Day Streak'),
-                    _achievementCard(Icons.emoji_events_outlined, 'Mood Master'),
-                  ],
-                ),
-                const SizedBox(height: 24),
-                // Settings
-                Text(
-                  'Settings',
-                  style: GoogleFonts.poppins(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                _settingsToggle('Dark Mode', true),
-                const SizedBox(height: 8),
-                _settingsToggle('Notifications', true),
-                const SizedBox(height: 8),
-                _settingsToggle('Email Reminders', false),
-                const SizedBox(height: 32),
-                // Sign Out Button
-                SizedBox(
-                  width: double.infinity,
-                  height: 48,
-                  child: ElevatedButton(
-                    onPressed: () {},
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.transparent,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        side: const BorderSide(color: Color(0xFFEF4444), width: 2),
+                          ),
+                        ],
                       ),
                     ),
-                    child: Text(
-                      'Sign Out',
-                      style: GoogleFonts.poppins(
-                        color: Color(0xFFEF4444),
-                        fontWeight: FontWeight.w600,
-                        fontSize: 16,
-                      ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+              // Stats
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _statCard('0', 'Journal Entries'),
+                  _statCard('0', 'Day Streak'),
+                ],
+              ),
+              const SizedBox(height: 24),
+              // Achievements
+              Text(
+                'Achievements',
+                style: GoogleFonts.poppins(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _achievementCard(Icons.star_border, 'First Entry'),
+                  _achievementCard(Icons.calendar_today, '7 Day Streak'),
+                  _achievementCard(Icons.emoji_events_outlined, 'Mood Master'),
+                ],
+              ),
+              const SizedBox(height: 24),
+              // Settings
+              Text(
+                'Settings',
+                style: GoogleFonts.poppins(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
+                ),
+              ),
+              const SizedBox(height: 12),
+              _settingsToggle('Dark Mode', true),
+              const SizedBox(height: 8),
+              _settingsToggle('Notifications', true),
+              const SizedBox(height: 8),
+              _settingsToggle('Email Reminders', false),
+              const SizedBox(height: 32),
+              // Sign Out Button
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: ElevatedButton(
+                  onPressed: () {},
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      side: const BorderSide(color: Color(0xFFEF4444), width: 2),
+                    ),
+                  ),
+                  child: Text(
+                    'Sign Out',
+                    style: GoogleFonts.poppins(
+                      color: Color(0xFFEF4444),
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
                     ),
                   ),
                 ),
-                const SizedBox(height: 32),
-              ],
-            ),
+              ),
+              const SizedBox(height: 32),
+            ],
           ),
         ),
       ),
-      bottomNavigationBar: _customBottomNavBar(context, 4),
     );
   }
 

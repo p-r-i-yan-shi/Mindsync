@@ -14,145 +14,141 @@ class SuggestionsScreen extends StatefulWidget {
 class _SuggestionsScreenState extends State<SuggestionsScreen> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF232A4D),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 24),
-                // Header
-                Text(
-                  'AI Suggestions',
-                  style: GoogleFonts.poppins(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 28,
-                  ),
+    return SafeArea(
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 24),
+              // Header
+              Text(
+                'AI Suggestions',
+                style: GoogleFonts.poppins(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 28,
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  'Personalized recommendations for your wellness',
-                  style: GoogleFonts.poppins(
-                    color: Colors.white.withOpacity(0.7),
-                    fontWeight: FontWeight.w400,
-                    fontSize: 16,
-                  ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Personalized recommendations for your wellness',
+                style: GoogleFonts.poppins(
+                  color: Colors.white.withOpacity(0.7),
+                  fontWeight: FontWeight.w400,
+                  fontSize: 16,
                 ),
-                const SizedBox(height: 32),
-                
-                // Quote Section
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF313A5A),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Icon(
-                        Icons.format_quote,
-                        color: const Color(0xFF7B61FF),
-                        size: 32,
+              ),
+              const SizedBox(height: 32),
+              
+              // Quote Section
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF313A5A),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(
+                      Icons.format_quote,
+                      color: const Color(0xFF7B61FF),
+                      size: 32,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      '"The best way to take care of the future is to take care of the present moment."',
+                      style: GoogleFonts.poppins(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w500,
+                        fontSize: 16,
+                        height: 1.4,
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        '"The best way to take care of the future is to take care of the present moment."',
-                        style: GoogleFonts.poppins(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w500,
-                          fontSize: 16,
-                          height: 1.4,
-                        ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      '- Thich Nhat Hanh',
+                      style: GoogleFonts.poppins(
+                        color: Colors.white.withOpacity(0.7),
+                        fontWeight: FontWeight.w400,
+                        fontSize: 14,
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        '- Thich Nhat Hanh',
-                        style: GoogleFonts.poppins(
-                          color: Colors.white.withOpacity(0.7),
-                          fontWeight: FontWeight.w400,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-                
-                const SizedBox(height: 32),
-                
-                // For You Today Section
-                Text(
-                  'For You Today',
-                  style: GoogleFonts.poppins(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 20,
-                  ),
+              ),
+              
+              const SizedBox(height: 32),
+              
+              // For You Today Section
+              Text(
+                'For You Today',
+                style: GoogleFonts.poppins(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 20,
                 ),
-                const SizedBox(height: 20),
-                
-                // Calming Sounds Card
-                _suggestionCard(
-                  title: 'Calming Sounds',
-                  subtitle: '5-minute nature meditation',
-                  icon: Icons.headphones,
-                  iconColor: const Color(0xFF4ADE80),
-                  buttonText: '',
-                  hasPlayButton: true,
-                  onTap: () {},
-                ),
-                
-                const SizedBox(height: 16),
-                
-                // Take a Walk Card
-                _suggestionCard(
-                  title: 'Take a Walk',
-                  subtitle: 'Fresh air boosts mood',
-                  icon: Icons.directions_walk,
-                  iconColor: const Color(0xFF22C55E),
-                  buttonText: 'Mark as Done',
-                  buttonColor: const Color(0xFF22C55E),
-                  onTap: () {},
-                ),
-                
-                const SizedBox(height: 16),
-                
-                // Mindfulness Exercise Card
-                _suggestionCard(
-                  title: 'Mindfulness Exercise',
-                  subtitle: '3-minute breathing space',
-                  icon: Icons.self_improvement,
-                  iconColor: const Color(0xFF7B61FF),
-                  buttonText: 'Start Exercise',
-                  buttonColor: const Color(0xFF7B61FF),
-                  onTap: () {},
-                ),
-                
-                const SizedBox(height: 16),
-                
-                // Hydration Reminder Card
-                _suggestionCard(
-                  title: 'Hydration Reminder',
-                  subtitle: 'Stay hydrated for better mood',
-                  icon: Icons.local_drink,
-                  iconColor: const Color(0xFF8B5CF6),
-                  buttonText: 'Had Water',
-                  buttonColor: const Color(0xFF8B5CF6),
-                  onTap: () {},
-                ),
-                
-                const SizedBox(height: 32),
-              ],
-            ),
+              ),
+              const SizedBox(height: 20),
+              
+              // Calming Sounds Card
+              _suggestionCard(
+                title: 'Calming Sounds',
+                subtitle: '5-minute nature meditation',
+                icon: Icons.headphones,
+                iconColor: const Color(0xFF4ADE80),
+                buttonText: '',
+                hasPlayButton: true,
+                onTap: () {},
+              ),
+              
+              const SizedBox(height: 16),
+              
+              // Take a Walk Card
+              _suggestionCard(
+                title: 'Take a Walk',
+                subtitle: 'Fresh air boosts mood',
+                icon: Icons.directions_walk,
+                iconColor: const Color(0xFF22C55E),
+                buttonText: 'Mark as Done',
+                buttonColor: const Color(0xFF22C55E),
+                onTap: () {},
+              ),
+              
+              const SizedBox(height: 16),
+              
+              // Mindfulness Exercise Card
+              _suggestionCard(
+                title: 'Mindfulness Exercise',
+                subtitle: '3-minute breathing space',
+                icon: Icons.self_improvement,
+                iconColor: const Color(0xFF7B61FF),
+                buttonText: 'Start Exercise',
+                buttonColor: const Color(0xFF7B61FF),
+                onTap: () {},
+              ),
+              
+              const SizedBox(height: 16),
+              
+              // Hydration Reminder Card
+              _suggestionCard(
+                title: 'Hydration Reminder',
+                subtitle: 'Stay hydrated for better mood',
+                icon: Icons.local_drink,
+                iconColor: const Color(0xFF8B5CF6),
+                buttonText: 'Had Water',
+                buttonColor: const Color(0xFF8B5CF6),
+                onTap: () {},
+              ),
+              
+              const SizedBox(height: 32),
+            ],
           ),
         ),
       ),
-      bottomNavigationBar: _customBottomNavBar(context, 1),
     );
   }
 

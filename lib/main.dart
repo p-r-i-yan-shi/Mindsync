@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'providers/journal_data.dart';
 import 'providers/theme_notifier.dart';
-import 'screens/login_screen.dart';
+import 'screens/auth/login_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/get_started_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -192,7 +192,7 @@ void main() async {
                 '/': (BuildContext context) => const GetStartedScreen(),
                 '/getStarted': (BuildContext context) => const GetStartedScreen(),
                 '/login': (BuildContext context) => const LoginScreen(),
-                '/home': (BuildContext context) => const HomeScreen(),
+                '/home': (BuildContext context) => HomeScreen(),
               },
               initialRoute: '/',
             );
